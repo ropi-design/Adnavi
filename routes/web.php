@@ -5,14 +5,47 @@ use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/dashboard');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
+// ダッシュボード
+Route::view('dashboard', 'pages.dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
+    // アカウント管理
+    Route::prefix('accounts')->name('accounts.')->group(function () {
+        Volt::route('google', 'accounts.connect-google')->name('google');
+        Volt::route('ads', 'accounts.ad-account-list')->name('ads');
+        Volt::route('analytics', 'accounts.analytics-property-list')->name('analytics');
+    });
+
+    // Google OAuth
+    Route::get('auth/google', [App\Http\Controllers\GoogleAuthController::class, 'redirect'])->name('google.auth');
+    Route::get('auth/google/callback', [App\Http\Controllers\GoogleAuthController::class, 'callback'])->name('google.callback');
+    Route::post('auth/google/disconnect', [App\Http\Controllers\GoogleAuthController::class, 'disconnect'])->name('google.disconnect');
+
+    // レポート
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Volt::route('/', 'reports.report-list')->name('index');
+        Volt::route('generate', 'reports.generate-report')->name('generate');
+        Volt::route('{id}', 'reports.report-detail')->name('show');
+    });
+
+    // インサイト
+    Route::prefix('insights')->name('insights.')->group(function () {
+        Volt::route('/', 'insights.insight-list')->name('index');
+        Volt::route('{id}', 'insights.insight-detail')->name('show');
+    });
+
+    // 改善施策
+    Route::prefix('recommendations')->name('recommendations.')->group(function () {
+        Volt::route('/', 'recommendations.recommendation-list')->name('index');
+        Volt::route('{id}', 'recommendations.recommendation-detail')->name('show');
+    });
+
+    // 設定
     Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('profile.edit');
