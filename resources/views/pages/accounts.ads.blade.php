@@ -1,5 +1,5 @@
 @extends('layouts.app')
 
 @section('content')
-    @volt('dashboard.overview')
+    @volt('accounts.ad-account-list')
 @endsection

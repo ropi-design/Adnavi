@@ -27,21 +27,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('auth/google/disconnect', [App\Http\Controllers\GoogleAuthController::class, 'disconnect'])->name('google.disconnect');
 
     // レポート
+    Route::view('reports', 'pages.reports')->name('reports.index');
     Route::prefix('reports')->name('reports.')->group(function () {
-        Volt::route('/', 'reports.report-list')->name('index');
         Volt::route('generate', 'reports.generate-report')->name('generate');
         Volt::route('{id}', 'reports.report-detail')->name('show');
     });
 
     // インサイト
+    Route::view('insights', 'pages.insights')->name('insights.index');
     Route::prefix('insights')->name('insights.')->group(function () {
-        Volt::route('/', 'insights.insight-list')->name('index');
         Volt::route('{id}', 'insights.insight-detail')->name('show');
     });
 
     // 改善施策
+    Route::view('recommendations', 'pages.recommendations')->name('recommendations.index');
     Route::prefix('recommendations')->name('recommendations.')->group(function () {
-        Volt::route('/', 'recommendations.recommendation-list')->name('index');
         Volt::route('{id}', 'recommendations.recommendation-detail')->name('show');
     });
 
