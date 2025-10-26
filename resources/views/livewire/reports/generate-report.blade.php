@@ -196,16 +196,16 @@ new class extends Component {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-bold text-gray-900 mb-2">開始日</label>
-                    <input type="date" wire:model="startDate" @disabled($reportType !== 'custom')
-                        class="form-input @disabled:opacity-50 @disabled:cursor-not-allowed" />
+                    <input type="date" wire:model="startDate" {{ $reportType !== 'custom' ? 'disabled' : '' }}
+                        class="form-input {{ $reportType !== 'custom' ? 'opacity-50 cursor-not-allowed' : '' }}" />
                     @error('startDate')
                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-900 mb-2">終了日</label>
-                    <input type="date" wire:model="endDate" @disabled($reportType !== 'custom')
-                        class="form-input @disabled:opacity-50 @disabled:cursor-not-allowed" />
+                    <input type="date" wire:model="endDate" {{ $reportType !== 'custom' ? 'disabled' : '' }}
+                        class="form-input {{ $reportType !== 'custom' ? 'opacity-50 cursor-not-allowed' : '' }}" />
                     @error('endDate')
                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                     @enderror
