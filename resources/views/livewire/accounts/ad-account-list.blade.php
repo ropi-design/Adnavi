@@ -2,26 +2,24 @@
 
 use App\Models\AdAccount;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Component;
+use function Livewire\Volt\{state, mount};
 
-new class extends Component {
-    public $adAccounts = [];
+state(['adAccounts' => []]);
 
-    public function mount(): void
-    {
-        $this->adAccounts = AdAccount::where('user_id', Auth::id())->where('is_active', true)->with('googleAccount')->latest()->get();
+mount(function () {
+    $this->adAccounts = AdAccount::where('user_id', Auth::id())->where('is_active', true)->with('googleAccount')->latest()->get();
+});
+
+$checkSync = function ($accountId) {
+    $account = AdAccount::find($accountId);
+    if ($account && $account->needsSync()) {
+        session()->flash('message', 'アカウント ' . $account->account_name . ' は同期が必要です');
+    } else {
+        session()->flash('message', 'アカウント ' . $account->account_name . ' は最新です');
     }
+};
 
-    public function checkSync($accountId): void
-    {
-        $account = AdAccount::find($accountId);
-        if ($account && $account->needsSync()) {
-            session()->flash('message', 'アカウント ' . $account->account_name . ' は同期が必要です');
-        } else {
-            session()->flash('message', 'アカウント ' . $account->account_name . ' は最新です');
-        }
-    }
-}; ?>
+?>
 
 <div class="space-y-6 p-6 lg:p-8">
     {{-- ヘッダー --}}

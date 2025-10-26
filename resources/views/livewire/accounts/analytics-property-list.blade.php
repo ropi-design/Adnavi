@@ -2,16 +2,15 @@
 
 use App\Models\AnalyticsProperty;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Volt\Component;
+use function Livewire\Volt\{state, mount};
 
-new class extends Component {
-    public $analyticsProperties = [];
+state(['analyticsProperties' => []]);
 
-    public function mount(): void
-    {
-        $this->analyticsProperties = AnalyticsProperty::where('user_id', Auth::id())->where('is_active', true)->with('googleAccount')->latest()->get();
-    }
-}; ?>
+mount(function () {
+    $this->analyticsProperties = AnalyticsProperty::where('user_id', Auth::id())->where('is_active', true)->with('googleAccount')->latest()->get();
+});
+
+?>
 
 <div class="space-y-6 p-6 lg:p-8">
     {{-- ヘッダー --}}

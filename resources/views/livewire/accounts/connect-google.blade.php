@@ -1,40 +1,37 @@
 <?php
 
-use Livewire\Volt\Component;
 use Illuminate\Support\Facades\Auth;
+use function Livewire\Volt\{state, mount};
 
-new class extends Component {
-    public bool $isConnected = false;
-    public ?string $connectedEmail = null;
+state([
+    'isConnected' => false,
+    'connectedEmail' => null,
+]);
 
-    public function mount(): void
-    {
-        $this->checkConnection();
-    }
+mount(function () {
+    $this->checkConnection();
+});
 
-    public function checkConnection(): void
-    {
-        $googleAccount = Auth::user()->googleAccounts()->first();
+$checkConnection = function () {
+    $googleAccount = Auth::user()->googleAccounts()->first();
 
-        $this->isConnected = $googleAccount !== null;
-        $this->connectedEmail = $googleAccount?->email;
-    }
+    $this->isConnected = $googleAccount !== null;
+    $this->connectedEmail = $googleAccount?->email;
+};
 
-    public function connect(): void
-    {
-        // Google OAuth認証へリダイレクト
-        $this->redirect('/auth/google');
-    }
+$connect = function () {
+    $this->redirect('/auth/google');
+};
 
-    public function disconnect(): void
-    {
-        Auth::user()->googleAccounts()->delete();
+$disconnect = function () {
+    Auth::user()->googleAccounts()->delete();
 
-        $this->checkConnection();
+    $this->checkConnection();
 
-        session()->flash('message', 'Googleアカウントの連携を解除しました');
-    }
-}; ?>
+    session()->flash('message', 'Googleアカウントの連携を解除しました');
+};
+
+?>
 
 <div class="p-6 lg:p-8">
     <div class="max-w-3xl mx-auto animate-fade-in">
