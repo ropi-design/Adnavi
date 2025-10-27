@@ -1,5 +1,0 @@
-@extends('layouts.app')
-
-@section('content')
-    @volt('dashboard.overview')
-@endsection

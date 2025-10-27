@@ -16,6 +16,7 @@ class Insight extends Model
         'description',
         'impact_score',
         'confidence_score',
+        'status',
     ];
 
     protected function casts(): array

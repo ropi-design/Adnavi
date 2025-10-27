@@ -2,6 +2,7 @@
 
 use App\Models\AdAccount;
 use App\Models\AnalyticsProperty;
+use App\Models\AnalysisReport;
 use App\Jobs\GenerateAnalysisReport;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
@@ -77,7 +78,19 @@ new class extends Component {
         $this->isGenerating = true;
 
         try {
-            GenerateAnalysisReport::dispatch(Auth::id(), $this->adAccountId, $this->analyticsPropertyId, $this->startDate, $this->endDate, $this->reportType);
+            // レポートレコードを作成
+            $report = AnalysisReport::create([
+                'user_id' => Auth::id(),
+                'ad_account_id' => $this->adAccountId,
+                'analytics_property_id' => $this->analyticsPropertyId,
+                'report_type' => $this->reportType,
+                'start_date' => $this->startDate,
+                'end_date' => $this->endDate,
+                'status' => 'pending',
+            ]);
+
+            // ジョブをディスパッチ
+            GenerateAnalysisReport::dispatch($report->id);
 
             session()->flash('message', 'レポート生成を開始しました。完了次第、通知いたします。');
             $this->redirect('/reports', navigate: true);
@@ -91,19 +104,9 @@ new class extends Component {
 <div class="p-6 lg:p-8 animate-fade-in">
     <div class="max-w-4xl mx-auto">
         {{-- ヘッダー --}}
-        <div class="mb-8">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="p-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-lg">
-                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-4xl font-bold text-gray-900">AIレポート生成</h1>
-                    <p class="text-gray-600 mt-1">Geminiで効果分析を自動実行</p>
-                </div>
-            </div>
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-1">AIレポート生成</h1>
+            <p class="text-sm text-gray-600">Geminiで効果分析を自動実行</p>
         </div>
 
         <form wire:submit="generate" class="card p-8 space-y-6">
@@ -237,8 +240,7 @@ new class extends Component {
                 <div class="p-4 bg-green-100 border-l-4 border-green-500 rounded-lg">
                     <div class="flex items-center gap-2 text-green-800">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M5 13l4 4L19 7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
                         {{ session('message') }}
                     </div>

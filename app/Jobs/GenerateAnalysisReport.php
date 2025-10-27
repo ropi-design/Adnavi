@@ -33,20 +33,23 @@ class GenerateAnalysisReport implements ShouldQueue
             // ステータスを更新
             $report->update(['status' => 'processing']);
 
-            // TODO: DataAggregatorでデータを集約
-            // $aggregator = app(DataAggregator::class);
-            // $data = $aggregator->aggregate($report);
+            // DataAggregatorでデータを集約
+            $aggregator = app(DataAggregator::class);
+            $data = $aggregator->aggregate($report);
 
             // Geminiで分析
-            // $analysisResult = $geminiService->analyzePerformance($data);
+            $analysisResult = $geminiService->analyzePerformance(
+                $data['ad_data'],
+                $data['analytics_data']
+            );
 
             // 結果を保存
-            // $this->saveResults($report, $analysisResult);
+            $this->saveResults($report, $analysisResult);
 
             // ステータスを完了に更新
             $report->update([
                 'status' => 'completed',
-                'analysis_result' => [], // TODO: Gemini の結果
+                'analysis_result' => $analysisResult,
             ]);
 
             Log::info("AI analysis completed for report: {$report->id}");
@@ -62,6 +65,72 @@ class GenerateAnalysisReport implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    /**
+     * 分析結果を保存
+     */
+    protected function saveResults(AnalysisReport $report, ?array $result): void
+    {
+        if (!$result) {
+            return;
+        }
+
+        // InsightとRecommendationを生成
+        $insights = [];
+        $recommendations = [];
+
+        if (isset($result['insights'])) {
+            foreach ($result['insights'] as $insightData) {
+                $insights[] = $this->createInsight($report, $insightData);
+            }
+        }
+
+        if (isset($result['recommendations'])) {
+            foreach ($result['recommendations'] as $recData) {
+                $recommendations[] = $this->createRecommendation($report, $recData);
+            }
+        }
+
+        // 結果を保存
+        $report->update([
+            'overall_score' => $result['overall_performance']['score'] ?? null,
+            'summary' => $result['overall_performance']['summary'] ?? null,
+        ]);
+    }
+
+    /**
+     * Insightレコードを作成
+     */
+    protected function createInsight(AnalysisReport $report, array $data): void
+    {
+        $report->insights()->create([
+            'category' => $data['category'] ?? 'performance',
+            'priority' => $data['priority'] ?? 'medium',
+            'title' => $data['title'] ?? '',
+            'description' => $data['description'] ?? '',
+            'impact_score' => $data['impact_score'] ?? 5,
+            'confidence_score' => $data['confidence_score'] ?? 0.7,
+            'status' => 'new',
+        ]);
+    }
+
+    /**
+     * Recommendationレコードを作成
+     */
+    protected function createRecommendation(AnalysisReport $report, array $data): void
+    {
+        $report->recommendations()->create([
+            'analysis_report_id' => $report->id,
+            'insight_id' => null, // TODO: インデックスから取得
+            'title' => $data['title'] ?? '',
+            'description' => $data['description'] ?? '',
+            'action_type' => $data['action_type'] ?? 'other',
+            'estimated_impact' => $data['estimated_impact'] ?? '',
+            'implementation_difficulty' => $data['difficulty'] ?? 'medium',
+            'specific_actions' => $data['specific_actions'] ?? [],
+            'status' => 'pending',
+        ]);
     }
 
     /**

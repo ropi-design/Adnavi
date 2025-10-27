@@ -73,15 +73,15 @@ GOOGLE_ANALYTICS_DEFAULT_PROPERTY_ID=properties/123456789
 
 ## Gemini API 設定
 
-### オプション A: AI Studio（推奨・簡単）
+### オプション A: Google AI Studio（推奨・簡単）
+
+1. [Google AI Studio](https://makersuite.google.com/app/apikey) で API キーを取得
+2. 以下の設定を追加：
 
 ```env
-GEMINI_DRIVER=ai-studio
-GEMINI_API_KEY=your-gemini-api-key
+GEMINI_DRIVER=api
+GEMINI_API_KEY=your-gemini-api-key-here
 GEMINI_MODEL=gemini-1.5-pro-latest
-
-# または高速・低コストモデル
-# GEMINI_MODEL=gemini-1.5-flash-latest
 ```
 
 ### オプション B: Vertex AI（エンタープライズ向け）
@@ -93,6 +93,14 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 VERTEX_AI_LOCATION=us-central1
 VERTEX_AI_MODEL=gemini-1.5-pro
 ```
+
+### API キーの取得方法
+
+1. https://makersuite.google.com/app/apikey にアクセス
+2. Google アカウントでログイン
+3. 「Create API Key」をクリック
+4. プロジェクトを選択または作成
+5. 生成された API キーをコピーして `.env` に設定
 
 ## メール設定
 

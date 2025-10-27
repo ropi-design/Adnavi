@@ -4,18 +4,15 @@ use App\Models\Insight;
 use Illuminate\Support\Facades\Auth;
 use function Livewire\Volt\{state, mount};
 
-// 状態
 state([
     'insight' => null,
     'loading' => false,
 ]);
 
-// マウント時の処理
 mount(function ($id) {
     $this->loadInsight($id);
 });
 
-// インサイト読み込み
 $loadInsight = function ($id) {
     $this->loading = true;
 
@@ -28,7 +25,7 @@ $loadInsight = function ($id) {
 
 $implementRecommendation = function ($recommendationId) {
     $recommendation = $this->insight->recommendations()->findOrFail($recommendationId);
-    $recommendation->markAsImplemented();
+    $recommendation->update(['status' => 'implemented']);
 
     $this->loadInsight($this->insight->id);
 
@@ -37,164 +34,196 @@ $implementRecommendation = function ($recommendationId) {
 
 ?>
 
-<div class="space-y-6">
-    <div wire:loading wire:target="loadInsight" class="text-center py-12">
-        <flux:icon.arrow-path class="w-8 h-8 animate-spin mx-auto text-gray-400" />
+<div class="p-6 lg:p-8 space-y-6 animate-fade-in">
+    {{-- ローディング --}}
+    <div wire:loading wire:target="loadInsight" class="flex flex-col items-center justify-center py-16">
+        <svg class="w-12 h-12 text-blue-600 animate-spin mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <p class="text-gray-600 font-medium">インサイトを読み込んでいます...</p>
     </div>
 
     @if ($insight && !$loading)
         {{-- ヘッダー --}}
-        <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             <div class="flex-1">
                 <div class="flex items-center gap-3 mb-4">
                     @php
-                        $badgeColor = match ($insight->priority) {
-                            'high' => 'danger',
-                            'medium' => 'warning',
-                            'low' => 'neutral',
+                        $priorityConfig = match ($insight->priority->value) {
+                            'high' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'label' => '高'],
+                            'medium' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'label' => '中'],
+                            'low' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'label' => '低'],
                         };
-                    @endphp
-                    <flux:badge :variant="$badgeColor" size="lg">
-                        {{ match ($insight->priority) {
-                            'high' => '高',
-                            'medium' => '中',
-                            'low' => '低',
-                        } }}
-                        優先度
-                    </flux:badge>
-
-                    <flux:badge variant="ghost">
-                        {{ match ($insight->category) {
+                        $categoryLabel = match ($insight->category->value) {
                             'performance' => 'パフォーマンス',
                             'budget' => '予算',
                             'targeting' => 'ターゲティング',
                             'creative' => 'クリエイティブ',
                             'conversion' => 'コンバージョン',
-                        } }}
-                    </flux:badge>
+                        };
+                    @endphp
+                    <span
+                        class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold {{ $priorityConfig['bg'] }} {{ $priorityConfig['text'] }}">
+                        優先度: {{ $priorityConfig['label'] }}
+                    </span>
+                    <span
+                        class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold bg-purple-100 text-purple-800">
+                        {{ $categoryLabel }}
+                    </span>
                 </div>
 
-                <h1 class="text-3xl font-bold">{{ $insight->title }}</h1>
-                <p class="text-gray-600 mt-2">{{ $insight->description }}</p>
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ $insight->title }}</h1>
+                <p class="text-lg text-gray-700 leading-relaxed">{{ $insight->description }}</p>
+
+                <div class="flex items-center gap-6 mt-6">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span class="text-gray-600">インパクト:</span>
+                        <span class="text-2xl font-bold text-gray-900">{{ $insight->impact_score }}/10</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-gray-600">信頼度:</span>
+                        <span
+                            class="text-2xl font-bold text-gray-900">{{ number_format($insight->confidence_score * 100) }}%</span>
+                    </div>
+                </div>
             </div>
 
-            <flux:button href="/reports/{{ $insight->analysisReport->id }}" wire:navigate variant="ghost">
-                元のレポートを見る
-            </flux:button>
+            <a href="/reports/{{ $insight->analysisReport->id }}" class="btn btn-secondary">
+                レポートを見る
+            </a>
         </div>
 
-        {{-- スコア情報 --}}
-        <div class="grid grid-cols-2 gap-4">
-            <flux:card>
-                <div class="space-y-2">
-                    <div class="text-sm text-gray-500">インパクトスコア</div>
-                    <div class="flex items-center gap-4">
-                        <div class="text-4xl font-bold">{{ $insight->impact_score }}</div>
-                        <span class="text-gray-400">/ 10</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $insight->impact_score * 10 }}%">
-                        </div>
-                    </div>
+        {{-- メッセージ --}}
+        @if (session('message'))
+            <div class="p-4 bg-green-100 border-l-4 border-green-500 rounded-lg">
+                <div class="flex items-center gap-2 text-green-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {{ session('message') }}
                 </div>
-            </flux:card>
+            </div>
+        @endif
 
-            <flux:card>
-                <div class="space-y-2">
-                    <div class="text-sm text-gray-500">信頼度スコア</div>
-                    <div class="flex items-center gap-4">
-                        <div class="text-4xl font-bold">{{ number_format($insight->confidence_score * 100) }}</div>
-                        <span class="text-gray-400">%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-600 h-2 rounded-full"
-                            style="width: {{ $insight->confidence_score * 100 }}%"></div>
-                    </div>
+        {{-- データ詳細 --}}
+        @if ($insight->data_points)
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">データポイント</h2>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <pre class="text-sm text-gray-700 whitespace-pre-wrap">{{ json_encode($insight->data_points, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </div>
-            </flux:card>
-        </div>
+            </div>
+        @endif
 
-        {{-- 関連施策 --}}
+        {{-- 改善施策 --}}
         @if ($insight->recommendations->count() > 0)
-            <flux:card>
-                <flux:heading>関連する改善施策</flux:heading>
+            <div class="card p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">関連する改善施策</h2>
 
-                <div class="mt-6 space-y-4">
+                <div class="space-y-4">
                     @foreach ($insight->recommendations as $recommendation)
-                        <div class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                        <div
+                            class="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-lg transition-all">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-2">
+                                    <div class="flex items-center gap-3 mb-3">
                                         @php
-                                            $statusColor = match ($recommendation->status) {
-                                                'pending' => 'neutral',
-                                                'in_progress' => 'info',
-                                                'implemented' => 'success',
-                                                'dismissed' => 'ghost',
+                                            $statusConfig = match ($recommendation->status->value) {
+                                                'pending' => [
+                                                    'bg' => 'bg-gray-100',
+                                                    'text' => 'text-gray-800',
+                                                    'label' => '未着手',
+                                                ],
+                                                'in_progress' => [
+                                                    'bg' => 'bg-blue-100',
+                                                    'text' => 'text-blue-800',
+                                                    'label' => '実施中',
+                                                ],
+                                                'implemented' => [
+                                                    'bg' => 'bg-green-100',
+                                                    'text' => 'text-green-800',
+                                                    'label' => '実施済み',
+                                                ],
+                                                'dismissed' => [
+                                                    'bg' => 'bg-red-100',
+                                                    'text' => 'text-red-800',
+                                                    'label' => '却下',
+                                                ],
                                             };
                                         @endphp
-                                        <flux:badge :variant="$statusColor" size="sm">
-                                            {{ match ($recommendation->status) {
-                                                'pending' => '未着手',
-                                                'in_progress' => '実施中',
-                                                'implemented' => '実施済み',
-                                                'dismissed' => '却下',
-                                            } }}
-                                        </flux:badge>
-
-                                        <flux:badge variant="ghost" size="sm">
-                                            {{ match ($recommendation->implementation_difficulty) {
-                                                'easy' => '難易度: 簡単',
-                                                'medium' => '難易度: 普通',
-                                                'hard' => '難易度: 難しい',
-                                            } }}
-                                        </flux:badge>
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }}">
+                                            {{ $statusConfig['label'] }}
+                                        </span>
                                     </div>
 
-                                    <h4 class="font-semibold text-lg">{{ $recommendation->title }}</h4>
-                                    <p class="text-sm text-gray-600 mt-1">{{ $recommendation->description }}</p>
+                                    <h4 class="font-bold text-xl text-gray-900 mb-2">{{ $recommendation->title }}</h4>
+                                    <p class="text-gray-600 mb-4">{{ $recommendation->description }}</p>
 
-                                    @if ($recommendation->estimated_impact)
-                                        <div class="flex items-center gap-2 mt-3 text-sm">
-                                            <flux:icon.trending-up class="w-4 h-4 text-green-600" />
-                                            <span class="text-gray-600">期待効果:</span>
-                                            <span
-                                                class="font-semibold text-green-600">{{ $recommendation->estimated_impact }}</span>
+                                    <div class="flex items-center gap-6 text-sm">
+                                        <div>
+                                            <span class="text-gray-600">難易度:</span>
+                                            <span class="font-semibold text-gray-900">
+                                                {{ match ($recommendation->implementation_difficulty) {
+                                                    'easy' => '簡単',
+                                                    'medium' => '普通',
+                                                    'hard' => '難しい',
+                                                } }}
+                                            </span>
                                         </div>
-                                    @endif
+                                        @if ($recommendation->estimated_impact)
+                                            <div>
+                                                <span class="text-gray-600">推定効果:</span>
+                                                <span
+                                                    class="font-semibold text-gray-900">{{ $recommendation->estimated_impact }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
 
                                 <div class="flex flex-col gap-2">
-                                    @if ($recommendation->status === 'pending')
-                                        <flux:button size="sm"
-                                            wire:click="implementRecommendation({{ $recommendation->id }})">
-                                            実施開始
-                                        </flux:button>
-                                    @endif
-                                    <flux:button href="/recommendations/{{ $recommendation->id }}" wire:navigate
-                                        variant="ghost" size="sm">
+                                    <a href="/recommendations/{{ $recommendation->id }}"
+                                        class="btn btn-primary text-sm">
                                         詳細
-                                    </flux:button>
+                                    </a>
+                                    @if ($recommendation->status->value === 'pending')
+                                        <button wire:click="implementRecommendation({{ $recommendation->id }})"
+                                            class="btn btn-success text-sm">
+                                            実施済みにする
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
                         </div>
                     @endforeach
                 </div>
-            </flux:card>
-        @else
-            <flux:card>
-                <div class="text-center py-8 text-gray-500">
-                    <flux:icon.sparkles class="w-10 h-10 mx-auto mb-3 opacity-50" />
-                    <p>このインサイトに対する改善施策はありません</p>
-                </div>
-            </flux:card>
+            </div>
         @endif
 
-    @endif
-
-    @if (session('message'))
-        <flux:alert variant="success">
-            {{ session('message') }}
-        </flux:alert>
+        {{-- メタ情報 --}}
+        <div class="card p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">メタ情報</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-gray-600">レポート:</span>
+                    <span
+                        class="font-semibold text-gray-900">{{ $insight->analysisReport->adAccount->account_name }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-600">作成日:</span>
+                    <span
+                        class="font-semibold text-gray-900">{{ $insight->created_at->isoFormat('YYYY年MM月DD日 HH:mm') }}</span>
+                </div>
+            </div>
+        </div>
     @endif
 </div>

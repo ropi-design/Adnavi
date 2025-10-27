@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Recommendation extends Model
 {
     protected $fillable = [
+        'analysis_report_id',
         'insight_id',
         'title',
         'description',
@@ -25,6 +26,14 @@ class Recommendation extends Model
             'specific_actions' => 'array',
             'implemented_at' => 'datetime',
         ];
+    }
+
+    /**
+     * レポートとのリレーション
+     */
+    public function analysisReport(): BelongsTo
+    {
+        return $this->belongsTo(AnalysisReport::class);
     }
 
     /**

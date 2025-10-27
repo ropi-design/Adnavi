@@ -16,6 +16,8 @@ class AnalysisReport extends Model
         'start_date',
         'end_date',
         'status',
+        'overall_score',
+        'summary',
         'raw_data',
         'analysis_result',
         'error_message',
@@ -61,6 +63,14 @@ class AnalysisReport extends Model
     public function insights(): HasMany
     {
         return $this->hasMany(Insight::class);
+    }
+
+    /**
+     * 改善施策とのリレーション
+     */
+    public function recommendations(): HasMany
+    {
+        return $this->hasMany(Recommendation::class);
     }
 
     /**
