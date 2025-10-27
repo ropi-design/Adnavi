@@ -15,9 +15,27 @@
         </a>
 
         <flux:navbar class="-mb-px max-lg:hidden">
-            <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
+            <flux:navbar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                 wire:navigate>
-                {{ __('Dashboard') }}
+                {{ __('ダッシュボード') }}
+            </flux:navbar.item>
+            <flux:navbar.item icon="link" :href="route('accounts.google')" wire:navigate>
+                {{ __('Google連携') }}
+            </flux:navbar.item>
+            <flux:navbar.item icon="folder-open" :href="route('accounts.ads')" wire:navigate>
+                {{ __('広告アカウント') }}
+            </flux:navbar.item>
+            <flux:navbar.item icon="chart-bar" :href="route('accounts.analytics')" wire:navigate>
+                {{ __('Analytics') }}
+            </flux:navbar.item>
+            <flux:navbar.item icon="document-text" :href="route('reports.index')" wire:navigate>
+                {{ __('レポート') }}
+            </flux:navbar.item>
+            <flux:navbar.item icon="light-bulb" :href="route('insights.index')" wire:navigate>
+                {{ __('インサイト') }}
+            </flux:navbar.item>
+            <flux:navbar.item icon="sparkles" :href="route('recommendations.index')" wire:navigate>
+                {{ __('改善施策') }}
             </flux:navbar.item>
         </flux:navbar>
 
@@ -79,34 +97,24 @@
         </a>
 
         <flux:navlist variant="outline">
-            <flux:navlist.group :heading="__('メインメニュー')">
-                <flux:navlist.item icon="layout-grid" :href="route('dashboard')"
-                    :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('ダッシュボード') }}
-                </flux:navlist.item>
-            </flux:navlist.group>
-        </flux:navlist>
+            <flux:navlist.item icon="layout-grid" :href="route('dashboard')"
+                :current="request()->routeIs('dashboard')" wire:navigate>
+                {{ __('ダッシュボード') }}
+            </flux:navlist.item>
 
-        <flux:navlist variant="outline">
-            <flux:navlist.group :heading="__('アカウント管理')">
-                <flux:navlist.item icon="link" :href="route('accounts.google')" wire:navigate>{{ __('Google連携') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="folder-open" :href="route('accounts.ads')" wire:navigate>{{ __('広告アカウント') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="chart-bar" :href="route('accounts.analytics')" wire:navigate>
-                    {{ __('Analytics') }}</flux:navlist.item>
-            </flux:navlist.group>
-        </flux:navlist>
+            <flux:navlist.item icon="link" :href="route('accounts.google')" wire:navigate>{{ __('Google連携') }}
+            </flux:navlist.item>
+            <flux:navlist.item icon="folder-open" :href="route('accounts.ads')" wire:navigate>{{ __('広告アカウント') }}
+            </flux:navlist.item>
+            <flux:navlist.item icon="chart-bar" :href="route('accounts.analytics')" wire:navigate>
+                {{ __('Analytics') }}</flux:navlist.item>
 
-        <flux:navlist variant="outline">
-            <flux:navlist.group :heading="__('分析・レポート')">
-                <flux:navlist.item icon="document-text" :href="route('reports.index')" wire:navigate>
-                    {{ __('レポート') }}</flux:navlist.item>
-                <flux:navlist.item icon="light-bulb" :href="route('insights.index')" wire:navigate>{{ __('インサイト') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="sparkles" :href="route('recommendations.index')" wire:navigate>
-                    {{ __('改善施策') }}</flux:navlist.item>
-            </flux:navlist.group>
+            <flux:navlist.item icon="document-text" :href="route('reports.index')" wire:navigate>
+                {{ __('レポート') }}</flux:navlist.item>
+            <flux:navlist.item icon="light-bulb" :href="route('insights.index')" wire:navigate>{{ __('インサイト') }}
+            </flux:navlist.item>
+            <flux:navlist.item icon="sparkles" :href="route('recommendations.index')" wire:navigate>
+                {{ __('改善施策') }}</flux:navlist.item>
         </flux:navlist>
     </flux:sidebar>
 
