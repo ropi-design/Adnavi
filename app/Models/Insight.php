@@ -16,14 +16,17 @@ class Insight extends Model
         'description',
         'impact_score',
         'confidence_score',
-        'status',
+        'data_points',
     ];
 
     protected function casts(): array
     {
         return [
+            'category' => \App\Enums\InsightCategory::class,
+            'priority' => \App\Enums\Priority::class,
             'impact_score' => 'integer',
             'confidence_score' => 'decimal:2',
+            'data_points' => 'array',
         ];
     }
 

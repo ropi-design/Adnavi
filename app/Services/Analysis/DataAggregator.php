@@ -38,15 +38,33 @@ class DataAggregator
      */
     protected function aggregateAdData(int $adAccountId, Carbon $startDate, Carbon $endDate): array
     {
-        $metrics = AdMetricsDaily::where('ad_account_id', $adAccountId)
-            ->whereBetween('date', [$startDate, $endDate])
+        // まずad_accountに紐づくcampaign_idsを取得
+        $campaignIds = DB::table('campaigns')
+            ->where('ad_account_id', $adAccountId)
+            ->pluck('id');
+
+        if ($campaignIds->isEmpty()) {
+            return [
+                'impressions' => 0,
+                'clicks' => 0,
+                'cost' => 0,
+                'conversions' => 0,
+                'ctr' => 0,
+                'conversion_rate' => 0,
+                'cpa' => 0,
+                'roas' => 0,
+            ];
+        }
+
+        // キャンペーンIDで広告メトリクスを集約
+        $metrics = AdMetricsDaily::whereIn('campaign_id', $campaignIds)
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->select(
                 DB::raw('SUM(impressions) as total_impressions'),
                 DB::raw('SUM(clicks) as total_clicks'),
                 DB::raw('SUM(cost) as total_cost'),
                 DB::raw('SUM(conversions) as total_conversions'),
-                DB::raw('AVG(ctr) as avg_ctr'),
-                DB::raw('AVG(conversion_rate) as avg_conversion_rate')
+                DB::raw('AVG(ctr) as avg_ctr')
             )
             ->first();
 
@@ -55,7 +73,9 @@ class DataAggregator
         $totalCost = $metrics->total_cost ?? 0;
         $totalConversions = $metrics->total_conversions ?? 0;
         $ctr = $metrics->avg_ctr ?? 0;
-        $conversionRate = $metrics->avg_conversion_rate ?? 0;
+
+        // コンバージョン率を計算
+        $conversionRate = $totalClicks > 0 ? ($totalConversions / $totalClicks * 100) : 0;
 
         // CPA計算
         $cpa = $totalConversions > 0 ? ($totalCost / $totalConversions) : 0;
@@ -81,7 +101,7 @@ class DataAggregator
     protected function aggregateAnalyticsData(int $propertyId, Carbon $startDate, Carbon $endDate): array
     {
         $metrics = AnalyticsMetricsDaily::where('analytics_property_id', $propertyId)
-            ->whereBetween('date', [$startDate, $endDate])
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->select(
                 DB::raw('SUM(sessions) as total_sessions'),
                 DB::raw('SUM(users) as total_users'),

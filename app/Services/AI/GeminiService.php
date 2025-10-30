@@ -23,10 +23,12 @@ class GeminiService
     public function generateContent(string $prompt, array $options = []): ?array
     {
         try {
+            $url = "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}";
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
             ])
-                ->post("{$this->baseUrl}/models/{$this->model}:generateContent", [
+                ->post($url, [
                     'contents' => [
                         [
                             'parts' => [
@@ -35,34 +37,45 @@ class GeminiService
                         ],
                     ],
                     'generationConfig' => array_merge(
-                        config('gemini.generation_config'),
+                        config('gemini.generation_config', []),
                         $options
                     ),
-                ], [
-                    'key' => $this->apiKey,
                 ]);
 
             if ($response->successful()) {
                 $data = $response->json();
 
-                return $this->parseResponse($data);
+                $parsed = $this->parseResponse($data);
+                return [
+                    'parsed' => $parsed['parsed'] ?? null,
+                    'raw' => $data,
+                    'raw_text' => $parsed['raw_text'] ?? null,
+                ];
             }
 
             Log::error('Gemini API error: ' . $response->body());
-            return null;
+            return [
+                'parsed' => null,
+                'raw' => null,
+                'raw_text' => null,
+            ];
         } catch (\Exception $e) {
             Log::error('Gemini Service error: ' . $e->getMessage());
-            return null;
+            return [
+                'parsed' => null,
+                'raw' => null,
+                'raw_text' => null,
+            ];
         }
     }
 
     /**
      * レスポンスをパース
      */
-    protected function parseResponse(array $data): ?array
+    protected function parseResponse(array $data): array
     {
         if (!isset($data['candidates'][0]['content']['parts'][0]['text'])) {
-            return null;
+            return ['parsed' => null, 'raw_text' => null];
         }
 
         $text = $data['candidates'][0]['content']['parts'][0]['text'];
@@ -70,14 +83,15 @@ class GeminiService
         // JSONを探してパース
         if (preg_match('/\{[\s\S]*\}/', $text, $matches)) {
             try {
-                return json_decode($matches[0], true);
+                $parsed = json_decode($matches[0], true);
+                return ['parsed' => $parsed, 'raw_text' => $text];
             } catch (\Exception $e) {
                 Log::error('Failed to parse JSON from Gemini: ' . $e->getMessage());
             }
         }
 
-        // JSON形式でない場合はそのまま返す
-        return ['raw_text' => $text];
+        // JSON形式でない場合はraw_textのみ返す
+        return ['parsed' => null, 'raw_text' => $text];
     }
 
     /**
@@ -86,8 +100,11 @@ class GeminiService
     public function analyzePerformance(array $adData, array $analyticsData = []): ?array
     {
         $prompt = $this->buildAnalysisPrompt($adData, $analyticsData);
-
-        return $this->generateContent($prompt);
+        $result = $this->generateContent($prompt);
+        if (is_array($result)) {
+            $result['prompt'] = $prompt;
+        }
+        return $result;
     }
 
     /**

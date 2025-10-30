@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdMetricsDaily extends Model
 {
+    protected $table = 'ad_metrics_daily';
+
     protected $fillable = [
         'campaign_id',
         'date',

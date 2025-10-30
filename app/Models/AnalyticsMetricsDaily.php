@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AnalyticsMetricsDaily extends Model
 {
+    protected $table = 'analytics_metrics_daily';
+
     protected $fillable = [
         'analytics_property_id',
         'date',

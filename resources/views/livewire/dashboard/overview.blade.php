@@ -113,35 +113,27 @@ $refresh = function () {
     </div>
 
     {{-- 期間選択 --}}
-    <div class="mb-6 flex flex-wrap gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-200">
-        <button wire:click="changePeriod('today')"
-            class="flex-1 min-w-[100px] px-4 py-2.5 rounded-lg text-sm font-medium transition-colors {{ $selectedPeriod === 'today' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+    <div class="mb-6 flex gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-200">
+        <button wire:click="changePeriod('today')" type="button"
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'today' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
             今日
         </button>
-        <button wire:click="changePeriod('yesterday')"
-            class="flex-1 min-w-[100px] px-4 py-2.5 rounded-lg text-sm font-medium transition-colors {{ $selectedPeriod === 'yesterday' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+        <button wire:click="changePeriod('yesterday')" type="button"
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'yesterday' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
             昨日
         </button>
-        <button wire:click="changePeriod('week')"
-            class="flex-1 min-w-[100px] px-4 py-2.5 rounded-lg text-sm font-medium transition-colors {{ $selectedPeriod === 'week' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+        <button wire:click="changePeriod('week')" type="button"
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'week' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
             今週
         </button>
-        <button wire:click="changePeriod('month')"
-            class="flex-1 min-w-[100px] px-4 py-2.5 rounded-lg text-sm font-medium transition-colors {{ $selectedPeriod === 'month' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+        <button wire:click="changePeriod('month')" type="button"
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'month' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
             今月
         </button>
     </div>
 
-    {{-- ローディング状態 --}}
-    <div wire:loading wire:target="loadMetrics" class="flex flex-col items-center justify-center py-20">
-        <div class="relative w-24 h-24">
-            <div class="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
-            <div class="absolute inset-0 border-4 border-transparent border-t-blue-600 rounded-full animate-spin"></div>
-        </div>
-        <p class="text-gray-600 font-semibold mt-6 text-lg">データを読み込んでいます...</p>
-    </div>
-
     {{-- メトリクスカード --}}
+
     @if ($metrics && !$loading)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
 

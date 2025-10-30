@@ -16,6 +16,8 @@ class Recommendation extends Model
         'estimated_impact',
         'implementation_difficulty',
         'specific_actions',
+        // Backward compatibility alias for views / code referencing implementation_steps
+        'implementation_steps',
         'status',
         'implemented_at',
     ];
@@ -23,17 +25,10 @@ class Recommendation extends Model
     protected function casts(): array
     {
         return [
+            'status' => \App\Enums\RecommendationStatus::class,
             'specific_actions' => 'array',
             'implemented_at' => 'datetime',
         ];
-    }
-
-    /**
-     * レポートとのリレーション
-     */
-    public function analysisReport(): BelongsTo
-    {
-        return $this->belongsTo(AnalysisReport::class);
     }
 
     /**
@@ -85,5 +80,13 @@ class Recommendation extends Model
             'status' => 'implemented',
             'implemented_at' => now(),
         ]);
+    }
+
+    /**
+     * 互換アクセサ: implementation_steps を specific_actions にマッピング
+     */
+    public function getImplementationStepsAttribute(): array
+    {
+        return $this->specific_actions ?? [];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class AnalysisReport extends Model
 {
@@ -26,6 +27,8 @@ class AnalysisReport extends Model
     protected function casts(): array
     {
         return [
+            'report_type' => \App\Enums\ReportType::class,
+            'status' => \App\Enums\ReportStatus::class,
             'start_date' => 'date',
             'end_date' => 'date',
             'raw_data' => 'array',
@@ -66,11 +69,11 @@ class AnalysisReport extends Model
     }
 
     /**
-     * 改善施策とのリレーション
+     * 改善施策とのリレーション（インサイト経由）
      */
-    public function recommendations(): HasMany
+    public function recommendations(): HasManyThrough
     {
-        return $this->hasMany(Recommendation::class);
+        return $this->hasManyThrough(Recommendation::class, Insight::class);
     }
 
     /**
