@@ -97,9 +97,9 @@ class GeminiService
     /**
      * パフォーマンス分析のプロンプトを生成して実行
      */
-    public function analyzePerformance(array $adData, array $analyticsData = []): ?array
+    public function analyzePerformance(array $adData, array $analyticsData = [], array $keywordData = []): ?array
     {
-        $prompt = $this->buildAnalysisPrompt($adData, $analyticsData);
+        $prompt = $this->buildAnalysisPrompt($adData, $analyticsData, $keywordData);
         $result = $this->generateContent($prompt);
         if (is_array($result)) {
             $result['prompt'] = $prompt;
@@ -110,9 +110,9 @@ class GeminiService
     /**
      * 分析プロンプトを構築
      */
-    protected function buildAnalysisPrompt(array $adData, array $analyticsData = []): string
+    protected function buildAnalysisPrompt(array $adData, array $analyticsData = [], array $keywordData = []): string
     {
-        $prompt = "あなたはデジタルマーケティングの専門家です。以下のGoogle広告とGoogleアナリティクスのデータを分析し、パフォーマンスの評価と改善提案を行ってください。\n\n";
+        $prompt = "あなたは日本語で回答するデジタルマーケティングの上級アナリストです。以下のGoogle広告/Analyticsの集計値を基に、具体的で実行可能な改善提案を出してください。抽象論や一般論は避け、現場で即実施できる手順・指示書レベルの出力を求めます。\n\n";
         $prompt .= "## Google広告データ\n";
         $prompt .= "- 総インプレッション: " . number_format($adData['impressions'] ?? 0) . "\n";
         $prompt .= "- 総クリック数: " . number_format($adData['clicks'] ?? 0) . "\n";
@@ -122,6 +122,43 @@ class GeminiService
         $prompt .= "- CPA: ¥" . number_format($adData['cpa'] ?? 0) . "\n";
         $prompt .= "- ROAS: " . number_format($adData['roas'] ?? 0, 2) . "\n\n";
 
+        // 追加の派生指標
+        $cpc = (($adData['clicks'] ?? 0) > 0) ? (($adData['cost'] ?? 0) / ($adData['clicks'] ?? 1)) : 0;
+        $prompt .= "- 参考CPC: ¥" . number_format($cpc, 2) . "\n\n";
+
+        if (!empty($keywordData)) {
+            $prompt .= "## キーワードサマリ\n";
+            if (!empty($keywordData['top_keywords'])) {
+                $prompt .= "- クリック上位キーワード:\n";
+                foreach (array_slice($keywordData['top_keywords'], 0, 5) as $kw) {
+                    $prompt .= sprintf(
+                        "  * %s (%s) clicks:%d cvr:%.2f%% cpc:¥%.2f cpa:¥%.2f\n",
+                        $kw['keyword'],
+                        $kw['match_type'],
+                        $kw['clicks'],
+                        ($kw['cvr'] * 100),
+                        $kw['cpc'],
+                        $kw['cpa']
+                    );
+                }
+            }
+            if (!empty($keywordData['poor_keywords'])) {
+                $prompt .= "- 低CVRキーワード(要改善):\n";
+                foreach (array_slice($keywordData['poor_keywords'], 0, 5) as $kw) {
+                    $prompt .= sprintf(
+                        "  * %s (%s) clicks:%d cvr:%.2f%% cpc:¥%.2f cpa:¥%.2f\n",
+                        $kw['keyword'],
+                        $kw['match_type'],
+                        $kw['clicks'],
+                        ($kw['cvr'] * 100),
+                        $kw['cpc'],
+                        $kw['cpa']
+                    );
+                }
+                $prompt .= "\n";
+            }
+        }
+
         if (!empty($analyticsData)) {
             $prompt .= "## Googleアナリティクスデータ\n";
             $prompt .= "- セッション数: " . number_format($analyticsData['sessions'] ?? 0) . "\n";
@@ -130,11 +167,35 @@ class GeminiService
             $prompt .= "- コンバージョン率: " . number_format($analyticsData['conversion_rate'] ?? 0, 2) . "%\n\n";
         }
 
-        $prompt .= "以下のJSON形式で回答してください:\n";
+        $prompt .= "要件:\n";
+        $prompt .= "- クリック単価(CPC)、CTR、CV、CPAの関係から、どこにボトルネックがあるか診断\n";
+        $prompt .= "- 検索キーワード観点での具体提案（例: 現状キーワードの見直し、除外KW追加、新規KWの追加案3つ以上、ネガティブKW3つ以上）\n";
+        $prompt .= "- 広告文の改善例（見出し/説明文の候補を各2-3案。日本語で）\n";
+        $prompt .= "- 入札/予算配分/入札戦略の具体調整案\n";
+        $prompt .= "- 実施手順をステップ形式で具体的に（人がそのまま実行できるレベル）\n";
+
+        $prompt .= "以下のJSON形式で厳密に回答してください（余計なテキストは出力しない）:\n";
         $prompt .= "{\n";
-        $prompt .= '  "overall_performance": { "score": 1-5, "summary": "評価..." },\n';
-        $prompt .= '  "insights": [ { "category": "performance|budget|targeting|creative|conversion", "priority": "high|medium|low", "title": "...", "description": "...", "impact_score": 1-10, "confidence_score": 0-1 } ],\n';
-        $prompt .= '  "recommendations": [ { "insight_index": 0, "title": "...", "description": "...", "action_type": "budget_adjustment|keyword_addition|ad_copy_change", "estimated_impact": "...", "difficulty": "easy|medium|hard", "specific_actions": [...] } ]\n';
+        $prompt .= '  "overall_performance": { "score": 1-5, "summary": "要点の日本語サマリー" },\n';
+        $prompt .= '  "insights": [\n';
+        $prompt .= '    { "category": "performance|budget|targeting|creative|conversion", "priority": "high|medium|low", "title": "所見タイトル", "description": "詳細", "impact_score": 1-10, "confidence_score": 0-1 }\n';
+        $prompt .= '  ],\n';
+        $prompt .= '  "recommendations": [\n';
+        $prompt .= '    {\n';
+        $prompt .= '      "insight_index": 0,\n';
+        $prompt .= '      "title": "具体施策タイトル",\n';
+        $prompt .= '      "description": "なぜ有効か/期待効果",\n';
+        $prompt .= '      "action_type": "budget_adjustment|keyword_addition|ad_copy_change|bid_adjustment",\n';
+        $prompt .= '      "estimated_impact": "期待できる効果(日本語)",\n';
+        $prompt .= '      "difficulty": "easy|medium|hard",\n';
+        $prompt .= '      "specific_actions": ["手順1", "手順2", "手順3"],\n';
+        $prompt .= '      "keyword_suggestions": {\n';
+        $prompt .= '        "add": ["新規追加すべきKW(完全一致/フレーズなどルールも)"],\n';
+        $prompt .= '        "negative": ["追加すべき除外KW"],\n';
+        $prompt .= '        "ad_copy_examples": [{"headline": ["見出し案1","見出し案2"], "description": ["説明文案1","説明文案2"]}]\n';
+        $prompt .= '      }\n';
+        $prompt .= '    }\n';
+        $prompt .= '  ]\n';
         $prompt .= "}\n";
 
         return $prompt;

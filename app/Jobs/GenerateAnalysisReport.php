@@ -40,7 +40,8 @@ class GenerateAnalysisReport implements ShouldQueue
             // Geminiで分析（生データと解析済みの両方を受け取る）
             $ai = $geminiService->analyzePerformance(
                 $data['ad_data'],
-                $data['analytics_data']
+                $data['analytics_data'],
+                $data['keyword_data'] ?? []
             );
 
             $rawText = $ai['raw_text'] ?? null;

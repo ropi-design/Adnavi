@@ -5,6 +5,7 @@ namespace App\Services\Analysis;
 use App\Models\AdMetricsDaily;
 use App\Models\AnalysisReport;
 use App\Models\AnalyticsMetricsDaily;
+use App\Models\KeywordMetricsDaily;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -27,9 +28,13 @@ class DataAggregator
             $analyticsData = $this->aggregateAnalyticsData($report->analytics_property_id, $startDate, $endDate);
         }
 
+        // キーワードデータ（トップ/改善余地）
+        $keywordData = $this->aggregateKeywordData($report->ad_account_id, $startDate, $endDate);
+
         return [
             'ad_data' => $adData,
             'analytics_data' => $analyticsData,
+            'keyword_data' => $keywordData,
         ];
     }
 
@@ -115,6 +120,61 @@ class DataAggregator
             'users' => $metrics->total_users ?? 0,
             'bounce_rate' => $metrics->avg_bounce_rate ?? 0,
             'conversion_rate' => $metrics->avg_conversion_rate ?? 0,
+        ];
+    }
+
+    /**
+     * キーワードデータ（トップ・改善余地）
+     */
+    protected function aggregateKeywordData(int $adAccountId, Carbon $startDate, Carbon $endDate): array
+    {
+        $campaignIds = DB::table('campaigns')
+            ->where('ad_account_id', $adAccountId)
+            ->pluck('id');
+
+        if ($campaignIds->isEmpty()) {
+            return ['top_keywords' => [], 'poor_keywords' => []];
+        }
+
+        $rows = KeywordMetricsDaily::whereIn('campaign_id', $campaignIds)
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->select(
+                'keyword',
+                'match_type',
+                DB::raw('SUM(impressions) as imps'),
+                DB::raw('SUM(clicks) as clicks'),
+                DB::raw('SUM(cost) as cost'),
+                DB::raw('SUM(conversions) as convs'),
+                DB::raw('SUM(conversion_value) as conv_value')
+            )
+            ->groupBy('keyword', 'match_type')
+            ->get()
+            ->map(function ($r) {
+                $cpc = $r->clicks > 0 ? $r->cost / $r->clicks : 0;
+                $cvr = $r->clicks > 0 ? $r->convs / $r->clicks : 0;
+                $cpa = $r->convs > 0 ? $r->cost / $r->convs : 0;
+                $roas = $r->cost > 0 ? ($r->conv_value / $r->cost) : 0;
+                return [
+                    'keyword' => $r->keyword,
+                    'match_type' => $r->match_type,
+                    'impressions' => (int)$r->imps,
+                    'clicks' => (int)$r->clicks,
+                    'cost' => (float)$r->cost,
+                    'conversions' => (float)$r->convs,
+                    'conversion_value' => (float)$r->conv_value,
+                    'cpc' => (float)round($cpc, 2),
+                    'cvr' => (float)round($cvr, 4),
+                    'cpa' => (float)round($cpa, 2),
+                    'roas' => (float)round($roas, 4),
+                ];
+            });
+
+        $top = $rows->sortByDesc('clicks')->take(5)->values()->all();
+        $poor = $rows->filter(fn($r) => $r['clicks'] >= 10)->sortBy('cvr')->take(5)->values()->all();
+
+        return [
+            'top_keywords' => $top,
+            'poor_keywords' => $poor,
         ];
     }
 }

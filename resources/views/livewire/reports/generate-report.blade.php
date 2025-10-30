@@ -89,10 +89,14 @@ new class extends Component {
                 'status' => 'pending',
             ]);
 
-            // ジョブをディスパッチ
-            GenerateAnalysisReport::dispatch($report->id);
+            // ジョブをディスパッチ（ローカル/同期時は即実行して待機を回避）
+            if (config('queue.default', 'sync') === 'sync' || app()->environment('local')) {
+                GenerateAnalysisReport::dispatchSync($report->id);
+            } else {
+                GenerateAnalysisReport::dispatch($report->id);
+            }
 
-            session()->flash('message', 'レポート生成を開始しました。完了次第、通知いたします。');
+            session()->flash('message', 'レポート生成を開始しました。同期実行の場合は即時に結果が反映されます。');
             $this->redirect('/reports', navigate: true);
         } catch (\Exception $e) {
             session()->flash('error', 'レポート生成の開始に失敗しました: ' . $e->getMessage());
