@@ -12,6 +12,9 @@ state([
     'customEndDate' => null,
     'showCustomDatePicker' => false,
     'dateRange' => null,
+    'showGraphModal' => false,
+    'selectedMetric' => null,
+    'dailyData' => null,
 ]);
 
 // マウント時の処理
@@ -154,6 +157,81 @@ $refresh = function () {
         'message' => 'データを更新しました',
         'type' => 'success',
     ]);
+};
+
+// 日別データを生成
+$generateDailyData = function ($metricKey) {
+    $dateRange = $this->calculateDateRange();
+    $start = $dateRange['start'];
+    $end = $dateRange['end'];
+    
+    $days = $start->diffInDays($end) + 1;
+    $data = [];
+    $dates = [];
+    
+    // メトリクス名のマッピング
+    $metricNames = [
+        'impressions' => 'インプレッション',
+        'clicks' => 'クリック数',
+        'cost' => '費用',
+        'conversions' => 'コンバージョン',
+        'ctr' => 'クリック率',
+        'cpc' => 'クリック単価',
+        'cpa' => '獲得単価',
+        'cvr' => 'コンバージョン率',
+    ];
+    
+    // ベース値の設定
+    $baseValues = [
+        'impressions' => 125000,
+        'clicks' => 3500,
+        'cost' => 85000,
+        'conversions' => 145,
+        'ctr' => 2.8,
+        'cpc' => 24.29,
+        'cpa' => 586,
+        'cvr' => 4.14,
+    ];
+    
+    $baseValue = $baseValues[$metricKey] ?? 100;
+    
+    // 日別データを生成（少しばらつきを持たせる）
+    for ($i = 0; $i < $days; $i++) {
+        $date = $start->copy()->addDays($i);
+        $dates[] = $date->format('Y-m-d');
+        
+        // 日別の値を生成（±20%のばらつき）
+        $variation = (rand(8000, 12000) / 10000); // 0.8 から 1.2 の間
+        $value = $baseValue * $variation;
+        
+        // 合計値系のメトリクスは1日あたりの値に変換、率系のメトリクスはそのまま
+        if (in_array($metricKey, ['impressions', 'clicks', 'conversions', 'cost'])) {
+            $value = $value / $days; // 合計値を日数で割って1日あたりの値に
+        }
+        
+        $data[] = round($value, 2);
+    }
+    
+    return [
+        'dates' => $dates,
+        'values' => $data,
+        'name' => $metricNames[$metricKey] ?? $metricKey,
+        'key' => $metricKey,
+    ];
+};
+
+// メトリクスクリック時の処理
+$showMetricGraph = function ($metricKey) {
+    $this->selectedMetric = $metricKey;
+    $this->dailyData = $this->generateDailyData($metricKey);
+    $this->showGraphModal = true;
+};
+
+// グラフモーダルを閉じる
+$closeGraphModal = function () {
+    $this->showGraphModal = false;
+    $this->selectedMetric = null;
+    $this->dailyData = null;
 };
 
 ?>
@@ -343,7 +421,8 @@ $refresh = function () {
             </div>
 
             {{-- 2列目1行目: クリック数 (CTs) --}}
-            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                wire:click="showMetricGraph('clicks')">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -377,7 +456,8 @@ $refresh = function () {
             </div>
 
             {{-- 3列目1行目: コンバージョン (CV) --}}
-            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                wire:click="showMetricGraph('conversions')">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -410,7 +490,8 @@ $refresh = function () {
             </div>
 
             {{-- 1列目2行目: 費用 (Cost) --}}
-            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                wire:click="showMetricGraph('cost')">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -444,7 +525,8 @@ $refresh = function () {
             </div>
 
             {{-- 2列目2行目: クリック率 (CTR) --}}
-            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                wire:click="showMetricGraph('ctr')">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -478,7 +560,8 @@ $refresh = function () {
             </div>
 
             {{-- 3列目2行目: コンバージョン率 (CVR) --}}
-            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                wire:click="showMetricGraph('cvr')">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -512,7 +595,8 @@ $refresh = function () {
             </div>
 
             {{-- 1列目3行目: インプレッション (IMP) --}}
-            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                wire:click="showMetricGraph('impressions')">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -547,7 +631,8 @@ $refresh = function () {
             </div>
 
             {{-- 2列目3行目: クリック単価 (CPC) --}}
-            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                wire:click="showMetricGraph('cpc')">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -581,7 +666,8 @@ $refresh = function () {
             </div>
 
             {{-- 3列目3行目: CPA --}}
-            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow cursor-pointer"
+                wire:click="showMetricGraph('cpa')">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -666,6 +752,124 @@ $refresh = function () {
                     <h3 class="font-bold text-lg text-white mb-1">改善施策実施</h3>
                     <p class="text-sm text-white/90">AI提案を確認</p>
                 </a>
+            </div>
+        </div>
+    @endif
+
+    {{-- グラフモーダル --}}
+    @if ($showGraphModal && $dailyData)
+        <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+            wire:click="closeGraphModal">
+            <div class="bg-zinc-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-auto border border-zinc-700"
+                x-data="{
+                    init() {
+                        // Chart.jsのグラフを作成
+                        const ctx = this.$refs.chartCanvas;
+                        const data = @js($dailyData['values']);
+                        const dates = @js($dailyData['dates']);
+                        const metricName = @js($dailyData['name']);
+                        
+                        this.chart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: dates,
+                                datasets: [{
+                                    label: metricName,
+                                    data: data,
+                                    borderColor: '#4285F4',
+                                    backgroundColor: 'rgba(66, 133, 244, 0.1)',
+                                    tension: 0.4,
+                                    fill: true,
+                                    pointRadius: 3,
+                                    pointHoverRadius: 6,
+                                    pointBackgroundColor: '#4285F4',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2,
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        labels: {
+                                            color: '#9CA3AF'
+                                        }
+                                    },
+                                    tooltip: {
+                                        mode: 'index',
+                                        intersect: false,
+                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                        titleColor: '#fff',
+                                        bodyColor: '#fff',
+                                        borderColor: '#4285F4',
+                                        borderWidth: 1
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        ticks: {
+                                            color: '#9CA3AF',
+                                            maxTicksLimit: 10
+                                        },
+                                        grid: {
+                                            color: 'rgba(161, 161, 170, 0.1)'
+                                        }
+                                    },
+                                    y: {
+                                        ticks: {
+                                            color: '#9CA3AF'
+                                        },
+                                        grid: {
+                                            color: 'rgba(161, 161, 170, 0.1)'
+                                        },
+                                        beginAtZero: true
+                                    }
+                                },
+                                interaction: {
+                                    mode: 'index',
+                                    intersect: false
+                                }
+                            }
+                        });
+                    },
+                    destroy() {
+                        if (this.chart) {
+                            this.chart.destroy();
+                        }
+                    }
+                }"
+                wire:click.stop>
+                <div class="p-6 border-b border-zinc-700 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: #4285F4;">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">{{ $dailyData['name'] }} - 日別推移</h2>
+                            @if ($dateRange)
+                                <p class="text-sm text-gray-400">
+                                    {{ $dateRange['start']->format('Y年m月d日') }} ～ {{ $dateRange['end']->format('Y年m月d日') }}
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                    <button wire:click="closeGraphModal" type="button"
+                        class="p-2 text-gray-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div style="height: 400px;">
+                        <canvas x-ref="chartCanvas"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     @endif
