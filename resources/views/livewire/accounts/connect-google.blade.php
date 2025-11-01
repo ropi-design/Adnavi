@@ -82,7 +82,8 @@ $disconnect = function () {
                     </div>
 
                     <div class="flex gap-3">
-                        <button type="button" wire:click="disconnect" class="btn btn-danger flex items-center gap-2">
+                        <button type="button" wire:click="disconnect"
+                            class="flex items-center gap-2 px-6 py-3 text-lg w-full justify-center shadow-lg hover:shadow-xl bg-white border-2 border-red-300 text-red-600 font-semibold rounded-lg transition-colors hover:bg-red-50">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />

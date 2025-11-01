@@ -247,6 +247,32 @@
         /* フォームスタイル */
         .form-input {
             @apply w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
+            background-color: white !important;
+            color: #111827 !important;
+        }
+
+        .form-input option {
+            background-color: white !important;
+            color: #111827 !important;
+        }
+
+        select.form-input {
+            background-color: white !important;
+            color: #111827 !important;
+        }
+
+        select.form-input option {
+            background-color: white !important;
+            color: #111827 !important;
+        }
+
+        input[type="date"].form-input {
+            background-color: white !important;
+            color: #111827 !important;
+        }
+
+        input[type="date"].form-input::-webkit-calendar-picker-indicator {
+            filter: invert(0) !important;
         }
 
         /* アニメーション */

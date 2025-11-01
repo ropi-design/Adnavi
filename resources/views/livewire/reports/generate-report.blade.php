@@ -109,14 +109,14 @@ new class extends Component {
     <div class="max-w-4xl mx-auto">
         {{-- ヘッダー --}}
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-1">AIレポート生成</h1>
-            <p class="text-sm text-gray-600">Geminiで効果分析を自動実行</p>
+            <h1 class="text-2xl font-bold text-white mb-1">AIレポート生成</h1>
+            <p class="text-sm text-white">Geminiで効果分析を自動実行</p>
         </div>
 
         <form wire:submit="generate" class="card p-8 space-y-6">
             {{-- レポートタイプ --}}
             <div>
-                <label class="block text-sm font-bold text-gray-900 mb-3">
+                <label class="block text-sm font-bold text-white mb-3">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -127,7 +127,7 @@ new class extends Component {
                     <label class="relative">
                         <input type="radio" wire:model.live="reportType" value="daily" class="peer sr-only" />
                         <div
-                            class="p-4 border-2 rounded-xl cursor-pointer transition-all peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 hover:border-blue-400 peer-checked:shadow-lg">
+                            class="p-4 border-2 rounded-xl cursor-pointer transition-all peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 hover:border-blue-400 peer-checked:shadow-lg text-white">
                             <div class="text-center">
                                 <div class="font-bold text-lg">日次</div>
                                 <div class="text-xs mt-1">昨日のデータ</div>
@@ -137,7 +137,7 @@ new class extends Component {
                     <label class="relative">
                         <input type="radio" wire:model.live="reportType" value="weekly" class="peer sr-only" />
                         <div
-                            class="p-4 border-2 rounded-xl cursor-pointer transition-all peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 hover:border-blue-400 peer-checked:shadow-lg">
+                            class="p-4 border-2 rounded-xl cursor-pointer transition-all peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 hover:border-blue-400 peer-checked:shadow-lg text-white">
                             <div class="text-center">
                                 <div class="font-bold text-lg">週次</div>
                                 <div class="text-xs mt-1">先週のデータ</div>
@@ -147,7 +147,7 @@ new class extends Component {
                     <label class="relative">
                         <input type="radio" wire:model.live="reportType" value="monthly" class="peer sr-only" />
                         <div
-                            class="p-4 border-2 rounded-xl cursor-pointer transition-all peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 hover:border-blue-400 peer-checked:shadow-lg">
+                            class="p-4 border-2 rounded-xl cursor-pointer transition-all peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 hover:border-blue-400 peer-checked:shadow-lg text-white">
                             <div class="text-center">
                                 <div class="font-bold text-lg">月次</div>
                                 <div class="text-xs mt-1">先月のデータ</div>
@@ -157,7 +157,7 @@ new class extends Component {
                     <label class="relative">
                         <input type="radio" wire:model.live="reportType" value="custom" class="peer sr-only" />
                         <div
-                            class="p-4 border-2 rounded-xl cursor-pointer transition-all peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 hover:border-blue-400 peer-checked:shadow-lg">
+                            class="p-4 border-2 rounded-xl cursor-pointer transition-all peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 hover:border-blue-400 peer-checked:shadow-lg text-white">
                             <div class="text-center">
                                 <div class="font-bold text-lg">カスタム</div>
                                 <div class="text-xs mt-1">期間を指定</div>
@@ -172,8 +172,9 @@ new class extends Component {
 
             {{-- 広告アカウント --}}
             <div>
-                <label class="block text-sm font-bold text-gray-900 mb-2">広告アカウント *</label>
-                <select wire:model="adAccountId" class="form-input">
+                <label class="block text-sm font-bold text-white mb-2">広告アカウント *</label>
+                <select wire:model="adAccountId" class="form-input"
+                    style="background-color: white !important; color: #111827 !important;">
                     <option value="">選択してください</option>
                     @foreach ($adAccounts as $account)
                         <option value="{{ $account->id }}">{{ $account->account_name }}</option>
@@ -186,33 +187,36 @@ new class extends Component {
 
             {{-- Analyticsプロパティ --}}
             <div>
-                <label class="block text-sm font-bold text-gray-900 mb-2">
+                <label class="block text-sm font-bold text-white mb-2">
                     Analyticsプロパティ
-                    <span class="text-xs text-gray-500 font-normal">（オプション）</span>
+                    <span class="text-xs text-white font-normal">（オプション）</span>
                 </label>
-                <select wire:model="analyticsPropertyId" class="form-input">
+                <select wire:model="analyticsPropertyId" class="form-input"
+                    style="background-color: white !important; color: #111827 !important;">
                     <option value="">選択しない</option>
                     @foreach ($analyticsProperties as $property)
                         <option value="{{ $property->id }}">{{ $property->property_name }}</option>
                     @endforeach
                 </select>
-                <p class="text-sm text-gray-600 mt-2">Analyticsデータも含めて分析する場合は選択してください</p>
+                <p class="text-sm text-white mt-2">Analyticsデータも含めて分析する場合は選択してください</p>
             </div>
 
             {{-- 期間 --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-bold text-gray-900 mb-2">開始日</label>
+                    <label class="block text-sm font-bold text-white mb-2">開始日</label>
                     <input type="date" wire:model="startDate" {{ $reportType !== 'custom' ? 'disabled' : '' }}
-                        class="form-input {{ $reportType !== 'custom' ? 'opacity-50 cursor-not-allowed' : '' }}" />
+                        class="form-input {{ $reportType !== 'custom' ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        style="background-color: white !important; color: #111827 !important;" />
                     @error('startDate')
                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-900 mb-2">終了日</label>
+                    <label class="block text-sm font-bold text-white mb-2">終了日</label>
                     <input type="date" wire:model="endDate" {{ $reportType !== 'custom' ? 'disabled' : '' }}
-                        class="form-input {{ $reportType !== 'custom' ? 'opacity-50 cursor-not-allowed' : '' }}" />
+                        class="form-input {{ $reportType !== 'custom' ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        style="background-color: white !important; color: #111827 !important;" />
                     @error('endDate')
                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                     @enderror
