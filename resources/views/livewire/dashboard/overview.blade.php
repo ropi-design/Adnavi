@@ -203,8 +203,9 @@ $refresh = function () {
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor"
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                                style="background-color: rgba(168, 85, 247, 0.3);">
+                                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
@@ -304,8 +305,9 @@ $refresh = function () {
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor"
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                                style="background-color: rgba(99, 102, 241, 0.3);">
+                                <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -337,8 +339,9 @@ $refresh = function () {
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 bg-cyan-50 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor"
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                                style="background-color: rgba(6, 182, 212, 0.3);">
+                                <svg class="w-6 h-6 text-cyan-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -349,8 +352,8 @@ $refresh = function () {
                                 <p class="text-xs text-gray-500">CVR</p>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-white mb-2"></p>
-                        {{ number_format($metrics['cvr']['value'], 2) }}%
+                        <p class="text-3xl font-bold text-white mb-2">
+                            {{ number_format($metrics['cvr']['value'], 2) }}%
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
                             <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
@@ -370,8 +373,9 @@ $refresh = function () {
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor"
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                                style="background-color: rgba(249, 115, 22, 0.3);">
+                                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.05.402 2.75 1.015M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.05-.402-2.75-1.015M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -403,8 +407,9 @@ $refresh = function () {
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor"
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                                style="background-color: rgba(20, 184, 166, 0.3);">
+                                <svg class="w-6 h-6 text-teal-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.05.402 2.75 1.015M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.05-.402-2.75-1.015M15 8a3 3 0 11-6 0 3 3 0 016 0zm3 11a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -436,8 +441,9 @@ $refresh = function () {
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 bg-pink-50 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor"
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                                style="background-color: rgba(236, 72, 153, 0.3);">
+                                <svg class="w-6 h-6 text-pink-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
