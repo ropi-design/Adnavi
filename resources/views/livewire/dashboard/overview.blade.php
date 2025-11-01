@@ -164,11 +164,27 @@ $refresh = function () {
 
             {{-- 1列目1行目: Google広告 --}}
             {{-- TODO: 将来的にMeta広告、Yahoo!広告も追加可能な構造にする --}}
-            <div class="rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+            <div class="rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow relative overflow-hidden"
                 style="background-color: #4285F4;">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {{-- Googleロゴ4色のアクセントストライプ --}}
+                <div class="absolute top-0 left-0 right-0 h-1 flex">
+                    <div class="flex-1" style="background-color: #EA4335;"></div>
+                    <div class="flex-1" style="background-color: #FBBC05;"></div>
+                    <div class="flex-1" style="background-color: #34A853;"></div>
+                    <div class="flex-1" style="background-color: #4285F4;"></div>
+                </div>
+                <div class="flex items-center gap-3 mt-1">
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center relative overflow-hidden"
+                        style="background-color: rgba(255, 255, 255, 0.2);">
+                        {{-- Googleロゴ4色のアイコン背景 --}}
+                        <div class="absolute inset-0 opacity-30">
+                            <div class="absolute top-0 left-0 w-1/2 h-1/2" style="background-color: #EA4335;"></div>
+                            <div class="absolute top-0 right-0 w-1/2 h-1/2" style="background-color: #FBBC05;"></div>
+                            <div class="absolute bottom-0 left-0 w-1/2 h-1/2" style="background-color: #34A853;"></div>
+                            <div class="absolute bottom-0 right-0 w-1/2 h-1/2" style="background-color: #4285F4;"></div>
+                        </div>
+                        <svg class="w-7 h-7 text-white relative z-10" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
