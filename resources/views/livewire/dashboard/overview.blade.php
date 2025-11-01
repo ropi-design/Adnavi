@@ -85,7 +85,7 @@ $refresh = function () {
 
 ?>
 
-<div class="min-h-screen bg-gray-50 p-4 lg:p-8" x-data="{
+<div class="min-h-screen bg-black p-4 lg:p-8" x-data="{
     showStats: false,
     init() {
         setTimeout(() => { this.showStats = true }, 100)
@@ -94,7 +94,7 @@ $refresh = function () {
 
     {{-- コンパクトなヘッダー --}}
     <div class="mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: #4285F4;">
@@ -104,8 +104,8 @@ $refresh = function () {
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">ダッシュボード</h1>
-                        <p class="text-xs text-gray-600">広告パフォーマンスをリアルタイムで確認</p>
+                        <h1 class="text-xl font-bold text-white">ダッシュボード</h1>
+                        <p class="text-xs text-gray-400">広告パフォーマンスをリアルタイムで確認</p>
                     </div>
                 </div>
 
@@ -124,9 +124,9 @@ $refresh = function () {
     </div>
 
     {{-- 期間選択 --}}
-    <div class="mb-6 flex gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-200">
+    <div class="mb-6 flex gap-2 bg-zinc-900 p-2 rounded-xl shadow-sm border border-zinc-700">
         <button wire:click="changePeriod('today')" type="button"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'today' ? 'text-white' : 'text-gray-700 hover:bg-gray-100' }}"
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'today' ? 'text-white' : 'text-gray-300 hover:bg-zinc-800' }}"
             style="{{ $selectedPeriod === 'today' ? 'background-color: #4285F4;' : '' }}">
             今日
         </button>
@@ -199,7 +199,7 @@ $refresh = function () {
             </div>
 
             {{-- 2列目1行目: クリック数 (CTs) --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -210,9 +210,9 @@ $refresh = function () {
                                         d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
                                 </svg>
                             </div>
-                            <p class="text-sm font-medium text-gray-600">CTs</p>
+                            <p class="text-sm font-medium text-gray-400">CTs</p>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                        <p class="text-3xl font-bold text-white mb-2">
                             {{ number_format($metrics['clicks']['value']) }}
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
@@ -229,7 +229,7 @@ $refresh = function () {
             </div>
 
             {{-- 3列目1行目: コンバージョン (CV) --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -242,7 +242,7 @@ $refresh = function () {
                             </div>
                             <p class="text-sm font-medium text-gray-600">CV</p>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                        <p class="text-3xl font-bold text-white mb-2">
                             {{ number_format($metrics['conversions']['value']) }}
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
@@ -259,7 +259,7 @@ $refresh = function () {
             </div>
 
             {{-- 1列目2行目: インプレッション (IMP) --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -274,7 +274,7 @@ $refresh = function () {
                             </div>
                             <p class="text-sm font-medium text-gray-600">IMP</p>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                        <p class="text-3xl font-bold text-white mb-2">
                             {{ number_format($metrics['impressions']['value']) }}
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
@@ -291,7 +291,7 @@ $refresh = function () {
             </div>
 
             {{-- 2列目2行目: クリック率 (CTR) --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -304,7 +304,7 @@ $refresh = function () {
                             </div>
                             <p class="text-sm font-medium text-gray-600">CTR</p>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                        <p class="text-3xl font-bold text-white mb-2">
                             {{ number_format($metrics['ctr']['value'], 2) }}%
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
@@ -321,7 +321,7 @@ $refresh = function () {
             </div>
 
             {{-- 3列目2行目: コンバージョン率 (CVR) --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -334,7 +334,7 @@ $refresh = function () {
                             </div>
                             <p class="text-sm font-medium text-gray-600">CVR</p>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                        <p class="text-3xl font-bold text-white mb-2">
                             {{ number_format($metrics['cvr']['value'], 2) }}%
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
@@ -351,7 +351,7 @@ $refresh = function () {
             </div>
 
             {{-- 1列目3行目: 費用 (Cost) --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -364,7 +364,7 @@ $refresh = function () {
                             </div>
                             <p class="text-sm font-medium text-gray-600">Cost</p>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                        <p class="text-3xl font-bold text-white mb-2">
                             ¥{{ number_format($metrics['cost']['value']) }}
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
@@ -381,7 +381,7 @@ $refresh = function () {
             </div>
 
             {{-- 2列目3行目: クリック単価 (CPC) --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -394,7 +394,7 @@ $refresh = function () {
                             </div>
                             <p class="text-sm font-medium text-gray-600">CPC</p>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                        <p class="text-3xl font-bold text-white mb-2">
                             ¥{{ number_format($metrics['cpc']['value'], 2) }}
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
@@ -411,7 +411,7 @@ $refresh = function () {
             </div>
 
             {{-- 3列目3行目: CPA --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
@@ -424,7 +424,7 @@ $refresh = function () {
                             </div>
                             <p class="text-sm font-medium text-gray-600">CPA</p>
                         </div>
-                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                        <p class="text-3xl font-bold text-white mb-2">
                             ¥{{ number_format($metrics['cpa']['value']) }}
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
@@ -442,7 +442,7 @@ $refresh = function () {
         </div>
 
         {{-- クイックアクション --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <div class="bg-zinc-900 rounded-2xl shadow-sm border border-zinc-700 p-8">
             <div class="flex items-center gap-3 mb-6">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: #4285F4;">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -450,7 +450,7 @@ $refresh = function () {
                             d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
-                <h2 class="text-2xl font-bold text-gray-900">クイックアクション</h2>
+                <h2 class="text-2xl font-bold text-white">クイックアクション</h2>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -464,26 +464,27 @@ $refresh = function () {
                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
-                    <h3 class="font-bold text-lg text-gray-900 mb-1">AIレポート生成</h3>
-                    <p class="text-sm text-gray-600">Geminiで効果分析</p>
+                    <h3 class="font-bold text-lg text-white mb-1">AIレポート生成</h3>
+                    <p class="text-sm text-gray-400">Geminiで効果分析</p>
                 </a>
 
-                <a href="/insights" class="group p-6 bg-white border rounded-xl hover:bg-gray-50 transition-colors"
-                    style="border-color: #E9D5FF;">
+                <a href="/insights"
+                    class="group p-6 bg-zinc-800 border rounded-xl hover:bg-zinc-700 transition-colors"
+                    style="border-color: #4C1D95;">
                     <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
-                        style="background-color: #F9F5FF;">
+                        style="background-color: #3B0764;">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             style="color: #A855F7;">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
                     </div>
-                    <h3 class="font-bold text-lg text-gray-900 mb-1">インサイト確認</h3>
-                    <p class="text-sm text-gray-600">データから洞察</p>
+                    <h3 class="font-bold text-lg text-white mb-1">インサイト確認</h3>
+                    <p class="text-sm text-gray-400">データから洞察</p>
                 </a>
 
                 <a href="/recommendations" class="group p-6 border rounded-xl transition-colors"
-                    style="background-color: #F0FFF4; border-color: #BBF7D0;">
+                    style="background-color: #064E3B; border-color: #047857;">
                     <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
                         style="background-color: #22C55E;">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -491,8 +492,8 @@ $refresh = function () {
                                 d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
                     </div>
-                    <h3 class="font-bold text-lg text-gray-900 mb-1">改善施策実施</h3>
-                    <p class="text-sm text-gray-600">AI提案を確認</p>
+                    <h3 class="font-bold text-lg text-white mb-1">改善施策実施</h3>
+                    <p class="text-sm text-gray-400">AI提案を確認</p>
                 </a>
             </div>
         </div>
