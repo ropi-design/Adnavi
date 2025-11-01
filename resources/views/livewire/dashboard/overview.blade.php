@@ -165,21 +165,65 @@ $refresh = function () {
         </div>
 
         @if ($showCustomDatePicker || $selectedPeriod === 'custom')
-            <div class="mt-4 pt-4 border-t border-zinc-700 flex gap-3 items-end">
+            <div class="mt-4 pt-4 border-t border-zinc-700 flex gap-3 items-end" x-data="{
+                init() {
+                    setTimeout(() => {
+                        const startInput = document.getElementById('start-date-picker');
+                        const endInput = document.getElementById('end-date-picker');
+            
+                        if (startInput && !startInput._flatpickr) {
+                            flatpickr(startInput, {
+                                dateFormat: 'Y-m-d',
+                                locale: flatpickr.l10ns.ja,
+                                theme: 'dark',
+                                onChange: function(selectedDates, dateStr) {
+                                    @this.set('customStartDate', dateStr);
+                                    if (endInput && endInput._flatpickr) {
+                                        endInput._flatpickr.set('minDate', dateStr);
+                                    }
+                                }
+                            });
+                        }
+            
+                        if (endInput && !endInput._flatpickr) {
+                            flatpickr(endInput, {
+                                dateFormat: 'Y-m-d',
+                                locale: flatpickr.l10ns.ja,
+                                theme: 'dark',
+                                minDate: startInput && startInput.value ? startInput.value : null,
+                                onChange: function(selectedDates, dateStr) {
+                                    @this.set('customEndDate', dateStr);
+                                }
+                            });
+                        }
+                    }, 100);
+                }
+            }">
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-400 mb-2">開始日</label>
-                    <input type="date" wire:model="customStartDate" wire:change="setCustomDate"
-                        class="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="text" id="start-date-picker" wire:model="customStartDate" placeholder="開始日を選択"
+                        class="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        readonly>
                 </div>
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-400 mb-2">終了日</label>
-                    <input type="date" wire:model="customEndDate" wire:change="setCustomDate"
-                        class="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="text" id="end-date-picker" wire:model="customEndDate" placeholder="終了日を選択"
+                        class="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        readonly>
                 </div>
-                <button wire:click="$set('showCustomDatePicker', false)" type="button"
-                    class="px-4 py-2 text-sm text-gray-300 hover:text-white">
-                    閉じる
-                </button>
+                <div class="flex flex-col gap-2">
+                    <button wire:click="setCustomDate" wire:loading.attr="disabled"
+                        @if (!$customStartDate || !$customEndDate) disabled @endif
+                        class="px-4 py-2 text-sm text-white rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap hover:opacity-90"
+                        style="background-color: #4285F4;">
+                        <span wire:loading.remove wire:target="setCustomDate">確定</span>
+                        <span wire:loading wire:target="setCustomDate">読み込み中...</span>
+                    </button>
+                    <button wire:click="$set('showCustomDatePicker', false)" type="button"
+                        class="px-4 py-2 text-sm text-gray-300 hover:text-white whitespace-nowrap">
+                        閉じる
+                    </button>
+                </div>
             </div>
         @endif
     </div>
@@ -355,8 +399,8 @@ $refresh = function () {
                                 <p class="text-xs text-gray-500">CTR</p>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-white mb-2">
-                            {{ number_format($metrics['ctr']['value'], 2) }}%
+                        <p class="text-3xl font-bold text-white mb-2"></p>
+                        {{ number_format($metrics['ctr']['value'], 2) }}%
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
                             <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
