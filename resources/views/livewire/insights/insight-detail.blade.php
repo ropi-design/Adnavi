@@ -45,6 +45,18 @@ $implementRecommendation = function ($recommendationId) {
     </div>
 
     @if ($insight && !$loading)
+        {{-- 戻るボタン --}}
+        <div class="mb-4">
+            <a href="/insights"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+                style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                戻る
+            </a>
+        </div>
+
         {{-- ヘッダー --}}
         <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             <div class="flex-1">
@@ -73,8 +85,8 @@ $implementRecommendation = function ($recommendationId) {
                     </span>
                 </div>
 
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ $insight->title }}</h1>
-                <p class="text-lg text-gray-700 leading-relaxed">{{ $insight->description }}</p>
+                <h1 class="text-4xl font-bold mb-4" style="color: #ffffff;">{{ $insight->title }}</h1>
+                <p class="text-lg leading-relaxed" style="color: #ffffff;">{{ $insight->description }}</p>
 
                 <div class="flex items-center gap-6 mt-6">
                     <div class="flex items-center gap-2">
@@ -82,22 +94,24 @@ $implementRecommendation = function ($recommendationId) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        <span class="text-gray-600">インパクト:</span>
-                        <span class="text-2xl font-bold text-gray-900">{{ $insight->impact_score }}/10</span>
+                        <span style="color: #ffffff;">インパクト:</span>
+                        <span class="text-2xl font-bold" style="color: #ffffff;">{{ $insight->impact_score }}/10</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="text-gray-600">信頼度:</span>
-                        <span
-                            class="text-2xl font-bold text-gray-900">{{ number_format($insight->confidence_score * 100) }}%</span>
+                        <span style="color: #ffffff;">信頼度:</span>
+                        <span class="text-2xl font-bold"
+                            style="color: #ffffff;">{{ number_format($insight->confidence_score * 100) }}%</span>
                     </div>
                 </div>
             </div>
 
-            <a href="/reports/{{ $insight->analysisReport->id }}" class="btn btn-secondary">
+            <a href="/reports/{{ $insight->analysisReport->id }}"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+                style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;">
                 レポートを見る
             </a>
         </div>
@@ -117,7 +131,7 @@ $implementRecommendation = function ($recommendationId) {
         {{-- データ詳細 --}}
         @if ($insight->data_points)
             <div class="card p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">データポイント</h2>
+                <h2 class="text-2xl font-bold mb-4" style="color: #ffffff;">データポイント</h2>
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <pre class="text-sm text-gray-700 whitespace-pre-wrap">{{ json_encode($insight->data_points, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </div>
@@ -127,12 +141,12 @@ $implementRecommendation = function ($recommendationId) {
         {{-- 改善施策 --}}
         @if ($insight->recommendations->count() > 0)
             <div class="card p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">関連する改善施策</h2>
+                <h2 class="text-2xl font-bold mb-6" style="color: #ffffff;">関連する改善施策</h2>
 
                 <div class="space-y-4">
                     @foreach ($insight->recommendations as $recommendation)
-                        <div
-                            class="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-lg transition-all">
+                        <div class="p-6 border-2 rounded-xl transition-all"
+                            style="background-color: #ffffff; border-color: #e5e7eb;">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-3 mb-3">
@@ -166,13 +180,14 @@ $implementRecommendation = function ($recommendationId) {
                                         </span>
                                     </div>
 
-                                    <h4 class="font-bold text-xl text-gray-900 mb-2">{{ $recommendation->title }}</h4>
-                                    <p class="text-gray-600 mb-4">{{ $recommendation->description }}</p>
+                                    <h4 class="font-bold text-xl mb-2" style="color: #000000;">
+                                        {{ $recommendation->title }}</h4>
+                                    <p class="mb-4" style="color: #000000;">{{ $recommendation->description }}</p>
 
                                     <div class="flex items-center gap-6 text-sm">
                                         <div>
-                                            <span class="text-gray-600">難易度:</span>
-                                            <span class="font-semibold text-gray-900">
+                                            <span style="color: #000000;">難易度:</span>
+                                            <span class="font-semibold" style="color: #000000;">
                                                 {{ match ($recommendation->implementation_difficulty) {
                                                     'easy' => '簡単',
                                                     'medium' => '普通',
@@ -182,9 +197,9 @@ $implementRecommendation = function ($recommendationId) {
                                         </div>
                                         @if ($recommendation->estimated_impact)
                                             <div>
-                                                <span class="text-gray-600">推定効果:</span>
-                                                <span
-                                                    class="font-semibold text-gray-900">{{ $recommendation->estimated_impact }}</span>
+                                                <span style="color: #000000;">推定効果:</span>
+                                                <span class="font-semibold"
+                                                    style="color: #000000;">{{ $recommendation->estimated_impact }}</span>
                                             </div>
                                         @endif
                                     </div>
@@ -211,17 +226,17 @@ $implementRecommendation = function ($recommendationId) {
 
         {{-- メタ情報 --}}
         <div class="card p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">メタ情報</h2>
+            <h2 class="text-2xl font-bold mb-4" style="color: #ffffff;">メタ情報</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                    <span class="text-gray-600">レポート:</span>
-                    <span
-                        class="font-semibold text-gray-900">{{ $insight->analysisReport->adAccount->account_name }}</span>
+                    <span style="color: #ffffff;">レポート:</span>
+                    <span class="font-semibold"
+                        style="color: #ffffff;">{{ $insight->analysisReport->adAccount->account_name }}</span>
                 </div>
                 <div>
-                    <span class="text-gray-600">作成日:</span>
-                    <span
-                        class="font-semibold text-gray-900">{{ $insight->created_at->isoFormat('YYYY年MM月DD日 HH:mm') }}</span>
+                    <span style="color: #ffffff;">作成日:</span>
+                    <span class="font-semibold"
+                        style="color: #ffffff;">{{ $insight->created_at->isoFormat('YYYY年MM月DD日 HH:mm') }}</span>
                 </div>
             </div>
         </div>
