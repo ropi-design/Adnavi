@@ -13,10 +13,22 @@ mount(function () {
 ?>
 
 <div class="space-y-6 p-6 lg:p-8">
+    {{-- 戻るボタン --}}
+    <div class="mb-4">
+        <a href="/accounts/analytics"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+            style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            詳細画面に戻る
+        </a>
+    </div>
+
     {{-- ヘッダー --}}
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold" style="color: #ffffff;">Analyticsプロパティ</h1>
+            <h1 class="text-3xl font-bold" style="color: #ffffff;">Analyticsプロパティ一覧</h1>
             <p class="mt-1" style="color: #ffffff;">連携中のAnalyticsプロパティを管理</p>
         </div>
         <a href="/accounts/google"
@@ -65,6 +77,12 @@ mount(function () {
                         <a href="/accounts/analytics/{{ $property->id }}"
                             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
                             style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
                             詳細
                         </a>
                     </div>

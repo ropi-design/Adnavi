@@ -7,6 +7,7 @@ use function Livewire\Volt\{state, mount};
 state([
     'report' => null,
     'loading' => false,
+    'showDeleteConfirm' => false,
 ]);
 
 mount(function ($id) {
@@ -21,6 +22,14 @@ $loadReport = function ($id) {
         ->findOrFail($id);
 
     $this->loading = false;
+};
+
+$showDeleteConfirm = function () {
+    $this->showDeleteConfirm = true;
+};
+
+$cancelDelete = function () {
+    $this->showDeleteConfirm = false;
 };
 
 $deleteReport = function () {
@@ -46,8 +55,8 @@ $deleteReport = function () {
         {{-- ヘッダー --}}
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-                <h1 class="text-4xl font-bold text-gray-900">{{ $report->adAccount->account_name }}</h1>
-                <p class="text-gray-600 mt-2">
+                <h1 class="text-4xl font-bold text-white">分析レポートの{{ $report->adAccount->account_name }}</h1>
+                <p class="text-white mt-2">
                     {{ match ($report->report_type->value) {
                         'daily' => '日次レポート',
                         'weekly' => '週次レポート',
@@ -74,7 +83,8 @@ $deleteReport = function () {
                     {{ $statusConfig['label'] }}
                 </span>
 
-                <button wire:click="deleteReport" onclick="return confirm('本当に削除しますか？')" class="btn btn-danger">
+                <button wire:click="showDeleteConfirm"
+                    class="btn bg-white text-black border-2 border-white hover:bg-gray-100 hover:border-gray-300">
                     削除
                 </button>
             </div>
@@ -178,16 +188,17 @@ $deleteReport = function () {
             @endif
         @elseif($report->status->value === 'failed')
             <div class="card p-6">
-                <div class="p-6 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                <div class="p-6 bg-red-50 border-l-4 border-red-500 rounded-lg overflow-hidden">
                     <div class="flex items-start gap-3">
                         <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <div>
+                        <div class="flex-1 min-w-0 overflow-hidden">
                             <p class="font-bold text-red-900">レポート生成に失敗しました</p>
-                            <p class="mt-2 text-sm text-red-800">{{ $report->error_message }}</p>
+                            <p class="mt-2 text-sm text-red-800 break-all">
+                                {{ $report->error_message }}</p>
                         </div>
                     </div>
                 </div>
@@ -207,5 +218,25 @@ $deleteReport = function () {
                 </div>
             </div>
         @endif
+    @endif
+
+    {{-- 削除確認モーダル --}}
+    @if ($showDeleteConfirm)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">レポートを削除</h3>
+                <p class="text-gray-700 mb-6">
+                    本当にこのレポートを削除しますか？この操作は取り消せません。
+                </p>
+                <div class="flex gap-3 justify-end">
+                    <button wire:click="cancelDelete" class="btn bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        キャンセル
+                    </button>
+                    <button wire:click="deleteReport" class="btn bg-red-600 text-white hover:bg-red-700">
+                        削除
+                    </button>
+                </div>
+            </div>
+        </div>
     @endif
 </div>

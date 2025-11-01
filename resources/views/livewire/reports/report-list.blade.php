@@ -171,6 +171,9 @@ with(
                         @endif
 
                         @if ($report->status->value === 'failed')
+                            <a href="/reports/{{ $report->id }}" class="btn btn-primary text-sm">
+                                詳細を見る
+                            </a>
                             <button class="btn btn-secondary text-sm">
                                 再試行
                             </button>

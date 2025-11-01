@@ -62,7 +62,10 @@ class DataAggregator
         }
 
         // キャンペーンIDで広告メトリクスを集約
-        $metrics = AdMetricsDaily::whereIn('campaign_id', $campaignIds)
+        // 注意: ad_metrics_dailyにはconversion_rateカラムがないため、計算で取得する
+        // テーブル名を明示して、JOINが生成されないようにする
+        $metrics = DB::table('ad_metrics_daily')
+            ->whereIn('campaign_id', $campaignIds)
             ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->select(
                 DB::raw('SUM(impressions) as total_impressions'),

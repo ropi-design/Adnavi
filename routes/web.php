@@ -19,9 +19,10 @@ Route::middleware(['auth'])->group(function () {
         Volt::route('google', 'accounts.connect-google')->name('google');
         Volt::route('ads', 'accounts.ad-account-list')->name('ads');
         Route::prefix('analytics')->name('analytics.')->group(function () {
+            Volt::route('list', 'accounts.analytics-property-list')->name('list');
             Volt::route('{id}', 'accounts.analytics-property-detail')->name('show');
         });
-        Volt::route('analytics', 'accounts.analytics-property-list')->name('analytics');
+        Volt::route('analytics', 'accounts.analytics-property-detail')->name('analytics');
     });
 
     // Google OAuth
