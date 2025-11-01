@@ -120,7 +120,7 @@ $refresh = function () {
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-white">ダッシュボード</h1>
+                        <h1 class="text-xl font-bold text-white">Google広告ダッシュボード</h1>
                         <p class="text-xs text-gray-400">広告パフォーマンスをリアルタイムで確認</p>
                     </div>
                 </div>
@@ -399,8 +399,8 @@ $refresh = function () {
                                 <p class="text-xs text-gray-500">CTR</p>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-white mb-2"></p>
-                        {{ number_format($metrics['ctr']['value'], 2) }}%
+                        <p class="text-3xl font-bold text-white mb-2">
+                            {{ number_format($metrics['ctr']['value'], 2) }}%
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
                             <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
