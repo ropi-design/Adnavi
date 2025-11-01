@@ -444,7 +444,7 @@ $refresh = function () {
         {{-- クイックアクション --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
             <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 bg-[#0EA5E9] rounded-lg flex items-center justify-center">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: #4285F4;">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -454,10 +454,12 @@ $refresh = function () {
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <a href="/reports/generate"
-                    class="group p-6 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors">
-                    <div class="w-12 h-12 bg-[#0EA5E9] rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="/reports/generate" class="group p-6 border rounded-xl transition-colors"
+                    style="background-color: #F0F6FF; border-color: #D0E5FF;">
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+                        style="background-color: #E0EDFF;">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            style="color: #94A3B8;">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
@@ -466,10 +468,12 @@ $refresh = function () {
                     <p class="text-sm text-gray-600">Geminiで効果分析</p>
                 </a>
 
-                <a href="/insights"
-                    class="group p-6 bg-purple-50 border border-purple-200 rounded-xl hover:bg-purple-100 transition-colors">
-                    <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="/insights" class="group p-6 bg-white border rounded-xl hover:bg-gray-50 transition-colors"
+                    style="border-color: #E9D5FF;">
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+                        style="background-color: #F9F5FF;">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            style="color: #A855F7;">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
@@ -478,9 +482,10 @@ $refresh = function () {
                     <p class="text-sm text-gray-600">データから洞察</p>
                 </a>
 
-                <a href="/recommendations"
-                    class="group p-6 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition-colors">
-                    <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4">
+                <a href="/recommendations" class="group p-6 border rounded-xl transition-colors"
+                    style="background-color: #F0FFF4; border-color: #BBF7D0;">
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+                        style="background-color: #22C55E;">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
