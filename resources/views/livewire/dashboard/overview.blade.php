@@ -8,6 +8,9 @@ state([
     'selectedPeriod' => 'today',
     'metrics' => null,
     'loading' => false,
+    'customStartDate' => null,
+    'customEndDate' => null,
+    'showCustomDatePicker' => false,
 ]);
 
 // マウント時の処理
@@ -70,7 +73,20 @@ $loadMetrics = function () {
 // 期間変更
 $changePeriod = function ($period) {
     $this->selectedPeriod = $period;
+    if ($period !== 'custom') {
+        $this->customStartDate = null;
+        $this->customEndDate = null;
+        $this->showCustomDatePicker = false;
+    }
     $this->loadMetrics();
+};
+
+// カスタム期間設定
+$setCustomDate = function () {
+    if ($this->customStartDate && $this->customEndDate) {
+        $this->selectedPeriod = 'custom';
+        $this->loadMetrics();
+    }
 };
 
 // データ更新
@@ -124,27 +140,48 @@ $refresh = function () {
     </div>
 
     {{-- 期間選択 --}}
-    <div class="mb-6 flex gap-2 bg-zinc-900 p-2 rounded-xl shadow-sm border border-zinc-700">
-        <button wire:click="changePeriod('today')" type="button"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'today' ? 'text-white' : 'text-gray-300 hover:bg-zinc-800' }}"
-            style="{{ $selectedPeriod === 'today' ? 'background-color: #4285F4;' : '' }}">
-            今日
-        </button>
-        <button wire:click="changePeriod('yesterday')" type="button"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'yesterday' ? 'text-white' : 'text-gray-700 hover:bg-gray-100' }}"
-            style="{{ $selectedPeriod === 'yesterday' ? 'background-color: #4285F4;' : '' }}">
-            昨日
-        </button>
-        <button wire:click="changePeriod('week')" type="button"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'week' ? 'text-white' : 'text-gray-700 hover:bg-gray-100' }}"
-            style="{{ $selectedPeriod === 'week' ? 'background-color: #4285F4;' : '' }}">
-            今週
-        </button>
-        <button wire:click="changePeriod('month')" type="button"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'month' ? 'text-white' : 'text-gray-700 hover:bg-gray-100' }}"
-            style="{{ $selectedPeriod === 'month' ? 'background-color: #4285F4;' : '' }}">
-            今月
-        </button>
+    <div class="mb-6 bg-zinc-900 p-4 rounded-xl shadow-sm border border-zinc-700">
+        <div class="flex gap-2 mb-3">
+            <button wire:click="changePeriod('today')" type="button"
+                class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'today' ? 'text-white' : 'text-gray-300 hover:bg-zinc-800' }}"
+                style="{{ $selectedPeriod === 'today' ? 'background-color: #4285F4;' : '' }}">
+                今日
+            </button>
+            <button wire:click="changePeriod('week')" type="button"
+                class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'week' ? 'text-white' : 'text-gray-300 hover:bg-zinc-800' }}"
+                style="{{ $selectedPeriod === 'week' ? 'background-color: #4285F4;' : '' }}">
+                今週
+            </button>
+            <button wire:click="changePeriod('month')" type="button"
+                class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'month' ? 'text-white' : 'text-gray-300 hover:bg-zinc-800' }}"
+                style="{{ $selectedPeriod === 'month' ? 'background-color: #4285F4;' : '' }}">
+                今月
+            </button>
+            <button wire:click="$set('showCustomDatePicker', true)" type="button"
+                class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'custom' ? 'text-white' : 'text-gray-300 hover:bg-zinc-800' }}"
+                style="{{ $selectedPeriod === 'custom' ? 'background-color: #4285F4;' : '' }}">
+                カスタム期間
+            </button>
+        </div>
+
+        @if ($showCustomDatePicker || $selectedPeriod === 'custom')
+            <div class="mt-4 pt-4 border-t border-zinc-700 flex gap-3 items-end">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">開始日</label>
+                    <input type="date" wire:model="customStartDate" wire:change="setCustomDate"
+                        class="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">終了日</label>
+                    <input type="date" wire:model="customEndDate" wire:change="setCustomDate"
+                        class="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <button wire:click="$set('showCustomDatePicker', false)" type="button"
+                    class="px-4 py-2 text-sm text-gray-300 hover:text-white">
+                    閉じる
+                </button>
+            </div>
+        @endif
     </div>
 
     {{-- メトリクスカード --}}
