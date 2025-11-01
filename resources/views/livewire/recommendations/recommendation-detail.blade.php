@@ -43,6 +43,18 @@ $updateStatus = function ($status) {
     </div>
 
     @if ($recommendation && !$loading)
+        {{-- 戻るボタン --}}
+        <div class="mb-4">
+            <a href="/recommendations"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+                style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                戻る
+            </a>
+        </div>
+
         {{-- ヘッダー --}}
         <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
             <div class="flex-1">
@@ -65,11 +77,13 @@ $updateStatus = function ($status) {
                     </span>
                 </div>
 
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ $recommendation->title }}</h1>
-                <p class="text-lg text-gray-700 leading-relaxed">{{ $recommendation->description }}</p>
+                <h1 class="text-4xl font-bold mb-4" style="color: #ffffff;">{{ $recommendation->title }}</h1>
+                <p class="text-lg leading-relaxed" style="color: #ffffff;">{{ $recommendation->description }}</p>
             </div>
 
-            <a href="/insights/{{ $recommendation->insight->id }}" class="btn btn-secondary">
+            <a href="/insights/{{ $recommendation->insight->id }}"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+                style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;">
                 インサイトを見る
             </a>
         </div>
@@ -88,7 +102,7 @@ $updateStatus = function ($status) {
 
         {{-- ステータス変更 --}}
         <div class="card p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">ステータス管理</h2>
+            <h2 class="text-2xl font-bold mb-4" style="color: #ffffff;">ステータス管理</h2>
             <div class="flex flex-wrap gap-3">
                 <button wire:click="updateStatus('pending')"
                     class="px-4 py-2 rounded-lg font-semibold transition-all {{ $recommendation->status->value === 'pending' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
@@ -112,7 +126,7 @@ $updateStatus = function ($status) {
         {{-- 実施詳細 --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="card p-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-4">実施難易度</h3>
+                <h3 class="text-xl font-bold mb-4" style="color: #ffffff;">実施難易度</h3>
                 <div class="flex items-center gap-3">
                     @php
                         $difficultyConfig = match ($recommendation->implementation_difficulty) {
@@ -123,16 +137,18 @@ $updateStatus = function ($status) {
                     @endphp
                     <span class="text-4xl">{{ $difficultyConfig['icon'] }}</span>
                     <div>
-                        <p class="text-2xl font-bold text-gray-900">{{ $difficultyConfig['label'] }}</p>
-                        <p class="text-sm text-gray-600">{{ $difficultyConfig['desc'] }}</p>
+                        <p class="text-2xl font-bold" style="color: #ffffff;">{{ $difficultyConfig['label'] }}</p>
+                        <p class="text-sm" style="color: #ffffff;">{{ $difficultyConfig['desc'] }}</p>
                     </div>
                 </div>
             </div>
 
             @if ($recommendation->estimated_impact)
-                <div class="card p-6">
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">推定効果</h3>
-                    <p class="text-3xl font-bold text-blue-600">{{ $recommendation->estimated_impact }}</p>
+                <div class="p-6 rounded-xl border-2" style="background-color: #ffffff; border-color: #e5e7eb;">
+                    <h3 class="text-xl font-bold mb-4"
+                        style="color: #000000; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">推定効果</h3>
+                    <p class="text-3xl font-bold" style="color: #667eea;">
+                        {{ $recommendation->estimated_impact }}</p>
                 </div>
             @endif
         </div>
@@ -140,7 +156,7 @@ $updateStatus = function ($status) {
         {{-- 実施手順 --}}
         @if ($recommendation->implementation_steps)
             <div class="card p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">実施手順</h2>
+                <h2 class="text-2xl font-bold mb-6" style="color: #ffffff;">実施手順</h2>
                 <div class="space-y-4">
                     @foreach ($recommendation->implementation_steps as $index => $step)
                         <div class="flex gap-4">
@@ -149,7 +165,7 @@ $updateStatus = function ($status) {
                                 {{ $index + 1 }}
                             </div>
                             <div class="flex-1 pt-1">
-                                <p class="text-gray-700">{{ $step }}</p>
+                                <p style="color: #ffffff;">{{ $step }}</p>
                             </div>
                         </div>
                     @endforeach
@@ -159,27 +175,30 @@ $updateStatus = function ($status) {
 
         {{-- 関連インサイト --}}
         <div class="card p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">関連インサイト</h2>
-            <div class="p-6 bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl">
-                <h4 class="font-bold text-xl text-gray-900 mb-2">{{ $recommendation->insight->title }}</h4>
-                <p class="text-gray-700 mb-4">{{ $recommendation->insight->description }}</p>
+            <h2 class="text-2xl font-bold mb-4" style="color: #ffffff;">関連インサイト</h2>
+            <div class="p-6 border-2 rounded-xl"
+                style="background: linear-gradient(to right, #faf5ff, #eff6ff); border-color: #d8b4fe;">
+                <h4 class="font-bold text-xl mb-2" style="color: #000000;">{{ $recommendation->insight->title }}</h4>
+                <p class="mb-4" style="color: #000000;">{{ $recommendation->insight->description }}</p>
                 <div class="flex items-center gap-6 text-sm">
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        <span class="text-gray-600">インパクト:</span>
-                        <span class="font-bold">{{ $recommendation->insight->impact_score }}/10</span>
+                        <span style="color: #000000;">インパクト:</span>
+                        <span class="font-bold"
+                            style="color: #000000;">{{ $recommendation->insight->impact_score }}/10</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span class="text-gray-600">信頼度:</span>
-                        <span
-                            class="font-bold">{{ number_format($recommendation->insight->confidence_score * 100) }}%</span>
+                        <span style="color: #000000;">信頼度:</span>
+                        <span class="font-bold"
+                            style="color: #000000;">{{ number_format($recommendation->insight->confidence_score * 100) }}%</span>
                     </div>
                 </div>
             </div>
@@ -187,17 +206,17 @@ $updateStatus = function ($status) {
 
         {{-- メタ情報 --}}
         <div class="card p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">メタ情報</h2>
+            <h2 class="text-2xl font-bold mb-4" style="color: #ffffff;">メタ情報</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                    <span class="text-gray-600">アカウント:</span>
-                    <span
-                        class="font-semibold text-gray-900">{{ $recommendation->insight->analysisReport->adAccount->account_name }}</span>
+                    <span style="color: #ffffff;">アカウント:</span>
+                    <span class="font-semibold"
+                        style="color: #ffffff;">{{ $recommendation->insight->analysisReport->adAccount->account_name }}</span>
                 </div>
                 <div>
-                    <span class="text-gray-600">作成日:</span>
-                    <span
-                        class="font-semibold text-gray-900">{{ $recommendation->created_at->isoFormat('YYYY年MM月DD日 HH:mm') }}</span>
+                    <span style="color: #ffffff;">作成日:</span>
+                    <span class="font-semibold"
+                        style="color: #ffffff;">{{ $recommendation->created_at->isoFormat('YYYY年MM月DD日 HH:mm') }}</span>
                 </div>
             </div>
         </div>

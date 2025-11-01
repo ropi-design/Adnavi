@@ -53,8 +53,8 @@ with(
 <div class="p-6 lg:p-8 space-y-6 animate-fade-in">
     {{-- ヘッダー --}}
     <div>
-        <h1 class="text-4xl font-bold text-gray-900">インサイト</h1>
-        <p class="text-gray-600 mt-1">AIが発見したデータの洞察</p>
+        <h1 class="text-4xl font-bold" style="color: #ffffff;">インサイト</h1>
+        <p class="mt-1" style="color: #ffffff;">AIが発見したデータの洞察</p>
     </div>
 
     {{-- フィルター --}}
@@ -68,18 +68,21 @@ with(
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="インサイトを検索..."
-                        class="form-input pl-10" />
+                        class="pl-10 w-full px-4 py-2.5 rounded-lg transition-colors"
+                        style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;" />
                 </div>
             </div>
 
-            <select wire:model.live="priorityFilter" class="form-input">
+            <select wire:model.live="priorityFilter" class="w-full px-4 py-2.5 rounded-lg transition-colors"
+                style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;">
                 <option value="all">全ての優先度</option>
                 <option value="high">高</option>
                 <option value="medium">中</option>
                 <option value="low">低</option>
             </select>
 
-            <select wire:model.live="categoryFilter" class="form-input">
+            <select wire:model.live="categoryFilter" class="w-full px-4 py-2.5 rounded-lg transition-colors"
+                style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;">
                 <option value="all">全てのカテゴリ</option>
                 <option value="performance">パフォーマンス</option>
                 <option value="budget">予算</option>
@@ -94,13 +97,14 @@ with(
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($insights as $insight)
             <a href="/insights/{{ $insight->id }}"
-                class="card p-6 hover:shadow-xl transition-all cursor-pointer group">
+                class="p-6 hover:shadow-xl transition-all cursor-pointer group rounded-xl"
+                style="background-color: #ffffff; border: 2px solid #e5e7eb;">
                 <div class="space-y-4">
                     {{-- ヘッダー --}}
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex-1 min-w-0">
-                            <h3
-                                class="font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                            <h3 class="font-bold text-lg line-clamp-2 group-hover:text-blue-600 transition-colors"
+                                style="color: #000000;">
                                 {{ $insight->title }}
                             </h3>
                         </div>
@@ -121,22 +125,22 @@ with(
                     {{-- カテゴリ --}}
                     <div>
                         @php
-                            $categoryLabel = match ($insight->category->value) {
-                                'performance' => 'パフォーマンス',
-                                'budget' => '予算',
-                                'targeting' => 'ターゲティング',
-                                'creative' => 'クリエイティブ',
-                                'conversion' => 'コンバージョン',
+                            $categoryConfig = match ($insight->category->value) {
+                                'performance' => ['label' => 'パフォーマンス', 'bg' => '#3b82f6', 'text' => '#ffffff'],
+                                'budget' => ['label' => '予算', 'bg' => '#f59e0b', 'text' => '#ffffff'],
+                                'targeting' => ['label' => 'ターゲティング', 'bg' => '#8b5cf6', 'text' => '#ffffff'],
+                                'creative' => ['label' => 'クリエイティブ', 'bg' => '#ec4899', 'text' => '#ffffff'],
+                                'conversion' => ['label' => 'コンバージョン', 'bg' => '#10b981', 'text' => '#ffffff'],
                             };
                         @endphp
-                        <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
-                            {{ $categoryLabel }}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold"
+                            style="background-color: {{ $categoryConfig['bg'] }}; color: {{ $categoryConfig['text'] }};">
+                            {{ $categoryConfig['label'] }}
                         </span>
                     </div>
 
                     {{-- 説明 --}}
-                    <p class="text-sm text-gray-600 line-clamp-3">
+                    <p class="text-sm line-clamp-3" style="color: #000000;">
                         {{ $insight->description }}
                     </p>
 
@@ -147,8 +151,8 @@ with(
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            <span class="text-gray-500">インパクト:</span>
-                            <span class="font-bold text-gray-900">{{ $insight->impact_score }}/10</span>
+                            <span style="color: #000000;">インパクト:</span>
+                            <span class="font-bold" style="color: #000000;">{{ $insight->impact_score }}/10</span>
                         </div>
                         <div class="flex items-center gap-2 text-sm">
                             <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
@@ -156,9 +160,9 @@ with(
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span class="text-gray-500">信頼度:</span>
-                            <span
-                                class="font-bold text-gray-900">{{ number_format($insight->confidence_score * 100) }}%</span>
+                            <span style="color: #000000;">信頼度:</span>
+                            <span class="font-bold"
+                                style="color: #000000;">{{ number_format($insight->confidence_score * 100) }}%</span>
                         </div>
                     </div>
                 </div>

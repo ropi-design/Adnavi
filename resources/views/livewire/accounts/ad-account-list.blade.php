@@ -25,8 +25,8 @@ $checkSync = function ($accountId) {
     {{-- ヘッダー --}}
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">広告アカウント</h1>
-            <p class="text-gray-600 mt-1">連携中の広告アカウントを管理</p>
+            <h1 class="text-3xl font-bold" style="color: #ffffff;">広告アカウント</h1>
+            <p class="mt-1" style="color: #ffffff;">連携中の広告アカウントを管理</p>
         </div>
         <a href="/accounts/google" class="btn btn-primary inline-flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@ $checkSync = function ($accountId) {
                         </div>
 
                         {{-- 情報 --}}
-                        <div class="space-y-3 bg-gray-50 rounded-lg p-4">
+                        <div class="space-y-3 rounded-lg p-4" style="background-color: #ffffff;">
                             <div class="flex items-center justify-between text-sm">
                                 <span class="text-gray-600 flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +116,8 @@ $checkSync = function ($accountId) {
                         {{-- アクション --}}
                         <div class="flex gap-2 pt-2 border-t border-gray-200">
                             <button wire:click="checkSync({{ $account->id }})"
-                                class="flex-1 px-4 py-2.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                                class="flex-1 px-4 py-2.5 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                                style="background-color: #ffffff; color: #000000;">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

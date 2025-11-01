@@ -63,9 +63,10 @@ $disconnect = function () {
                         </div>
 
                         <div class="relative flex items-center gap-4">
-                            <div class="p-4 bg-green-500 rounded-full shadow-lg">
-                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                            <div class="p-4 rounded-full shadow-lg border-2 border-green-300"
+                                style="background-color: white;">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    style="color: #ffffff;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M5 13l4 4L19 7" />
                                 </svg>
@@ -137,8 +138,8 @@ $disconnect = function () {
                         </div>
 
                         <button type="button" wire:click="connect"
-                            class="btn btn-primary flex items-center gap-3 px-6 py-3 text-lg w-full justify-center shadow-lg hover:shadow-xl">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="flex items-center gap-3 px-6 py-3 text-lg w-full justify-center shadow-lg hover:shadow-xl bg-white border-2 border-gray-300 text-gray-900 font-semibold rounded-lg transition-colors hover:bg-gray-50">
+                            <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                             </svg>

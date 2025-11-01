@@ -16,10 +16,12 @@ mount(function () {
     {{-- ヘッダー --}}
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Analyticsプロパティ</h1>
-            <p class="text-gray-600 mt-1">連携中のAnalyticsプロパティを管理</p>
+            <h1 class="text-3xl font-bold" style="color: #ffffff;">Analyticsプロパティ</h1>
+            <p class="mt-1" style="color: #ffffff;">連携中のAnalyticsプロパティを管理</p>
         </div>
-        <a href="/accounts/google" class="btn btn-primary inline-flex items-center gap-2">
+        <a href="/accounts/google"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+            style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -42,7 +44,8 @@ mount(function () {
                             </svg>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="font-bold text-xl text-gray-900 mb-1">{{ $property->property_name }}</h3>
+                            <h3 class="font-bold text-xl mb-1" style="color: #ffffff;">{{ $property->property_name }}
+                            </h3>
                             <p class="text-sm text-gray-500 font-mono mb-3">ID: {{ $property->property_id }}</p>
 
                             <div class="flex flex-wrap items-center gap-4 text-sm bg-gray-50 rounded-lg p-3">

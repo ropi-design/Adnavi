@@ -55,8 +55,8 @@ with(
 <div class="p-6 lg:p-8 space-y-6 animate-fade-in">
     {{-- ヘッダー --}}
     <div>
-        <h1 class="text-4xl font-bold text-gray-900">改善施策</h1>
-        <p class="text-gray-600 mt-1">AIが提案する具体的な改善アクション</p>
+        <h1 class="text-4xl font-bold" style="color: #ffffff;">改善施策</h1>
+        <p class="mt-1" style="color: #ffffff;">AIが提案する具体的な改善アクション</p>
     </div>
 
     {{-- フィルター --}}
@@ -70,11 +70,13 @@ with(
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="施策を検索..."
-                        class="form-input pl-10" />
+                        class="pl-10 w-full px-4 py-2.5 rounded-lg transition-colors"
+                        style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;" />
                 </div>
             </div>
 
-            <select wire:model.live="statusFilter" class="form-input">
+            <select wire:model.live="statusFilter" class="w-full px-4 py-2.5 rounded-lg transition-colors"
+                style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;">
                 <option value="all">全てのステータス</option>
                 <option value="pending">未着手</option>
                 <option value="in_progress">実施中</option>
@@ -82,7 +84,8 @@ with(
                 <option value="dismissed">却下</option>
             </select>
 
-            <select wire:model.live="difficultyFilter" class="form-input">
+            <select wire:model.live="difficultyFilter" class="w-full px-4 py-2.5 rounded-lg transition-colors"
+                style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;">
                 <option value="all">全ての難易度</option>
                 <option value="easy">簡単</option>
                 <option value="medium">普通</option>
@@ -94,7 +97,8 @@ with(
     {{-- 施策一覧 --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         @forelse($recommendations as $recommendation)
-            <div class="card p-6 hover:shadow-xl transition-all">
+            <div class="p-6 hover:shadow-xl transition-all rounded-xl"
+                style="background-color: #ffffff; border: 2px solid #e5e7eb;">
                 <div class="space-y-4">
                     {{-- ヘッダー --}}
                     <div class="flex items-start justify-between gap-3">

@@ -11,6 +11,7 @@ state([
     'customStartDate' => null,
     'customEndDate' => null,
     'showCustomDatePicker' => false,
+    'dateRange' => null,
 ]);
 
 // マウント時の処理
@@ -18,30 +19,86 @@ mount(function () {
     $this->loadMetrics();
 });
 
+// カスタム期間の日数を計算
+$calculateCustomDays = function () {
+    if (!$this->customStartDate || !$this->customEndDate) {
+        return 7; // デフォルトは7日
+    }
+
+    $start = \Carbon\Carbon::parse($this->customStartDate);
+    $end = \Carbon\Carbon::parse($this->customEndDate);
+
+    return max(1, $start->diffInDays($end) + 1);
+};
+
+// 日付範囲を計算
+$calculateDateRange = function () {
+    $now = \Carbon\Carbon::now();
+
+    return match ($this->selectedPeriod) {
+        'today' => [
+            'start' => $now->copy()->startOfDay(),
+            'end' => $now->copy()->endOfDay(),
+        ],
+        'week' => [
+            'start' => $now->copy()->startOfWeek(),
+            'end' => $now->copy()->endOfWeek(),
+        ],
+        'month' => [
+            'start' => $now->copy()->startOfMonth(),
+            'end' => $now->copy()->endOfMonth(),
+        ],
+        'custom' => [
+            'start' => $this->customStartDate ? \Carbon\Carbon::parse($this->customStartDate)->startOfDay() : $now->copy()->startOfDay(),
+            'end' => $this->customEndDate ? \Carbon\Carbon::parse($this->customEndDate)->endOfDay() : $now->copy()->endOfDay(),
+        ],
+        default => [
+            'start' => $now->copy()->startOfDay(),
+            'end' => $now->copy()->endOfDay(),
+        ],
+    };
+};
+
 // メトリクスデータの読み込み
 $loadMetrics = function () {
     $this->loading = true;
 
+    // 期間に応じたダミーデータを生成
     // TODO: 実際のデータ取得処理に置き換え
-    // 現在はダミーデータ
+    $period = $this->selectedPeriod;
+
+    // 日付範囲を計算して保存
+    $this->dateRange = $this->calculateDateRange();
+
+    // 期間別のデータ倍率
+    $multiplier = match ($period) {
+        'today' => 1,
+        'week' => 7,
+        'month' => 30,
+        'custom' => $this->calculateCustomDays(),
+        default => 1,
+    };
+
+    // ベースデータに期間倍率を適用
+    // 同じ期間では同じ値を返すように固定値を使用
     $this->metrics = [
         'impressions' => [
-            'value' => 125000,
+            'value' => (int) (125000 * $multiplier),
             'change' => 12.5,
             'trend' => 'up',
         ],
         'clicks' => [
-            'value' => 3500,
+            'value' => (int) (3500 * $multiplier),
             'change' => 8.3,
             'trend' => 'up',
         ],
         'cost' => [
-            'value' => 85000,
+            'value' => (int) (85000 * $multiplier),
             'change' => -5.2,
             'trend' => 'down',
         ],
         'conversions' => [
-            'value' => 145,
+            'value' => (int) (145 * $multiplier),
             'change' => 15.8,
             'trend' => 'up',
         ],
@@ -122,6 +179,12 @@ $refresh = function () {
                     <div>
                         <h1 class="text-xl font-bold text-white">Google広告ダッシュボード</h1>
                         <p class="text-xs text-gray-400">広告パフォーマンスをリアルタイムで確認</p>
+                        @if ($dateRange)
+                            <p class="text-xs text-gray-500 mt-1">
+                                期間: {{ $dateRange['start']->format('Y年m月d日') }} ～
+                                {{ $dateRange['end']->format('Y年m月d日') }}
+                            </p>
+                        @endif
                     </div>
                 </div>
 

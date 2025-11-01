@@ -53,11 +53,13 @@ with(
     {{-- ヘッダー --}}
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-            <h1 class="text-4xl font-bold text-gray-900">分析レポート</h1>
-            <p class="text-gray-600 mt-1">AI分析レポートの一覧</p>
+            <h1 class="text-4xl font-bold" style="color: #ffffff;">分析レポート</h1>
+            <p class="mt-1" style="color: #ffffff;">AI分析レポートの一覧</p>
         </div>
 
-        <a href="/reports/generate" class="btn btn-primary inline-flex items-center gap-2">
+        <a href="/reports/generate"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+            style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -76,11 +78,13 @@ with(
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="アカウント名で検索..."
-                        class="form-input pl-10" />
+                        class="pl-10 w-full px-4 py-2.5 rounded-lg transition-colors"
+                        style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;" />
                 </div>
             </div>
 
-            <select wire:model.live="statusFilter" class="form-input">
+            <select wire:model.live="statusFilter" class="w-full px-4 py-2.5 rounded-lg transition-colors"
+                style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;">
                 <option value="all">全てのステータス</option>
                 <option value="pending">待機中</option>
                 <option value="processing">処理中</option>
@@ -122,7 +126,7 @@ with(
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h3 class="font-bold text-xl text-gray-900">
+                                <h3 class="font-bold text-xl" style="color: #ffffff;">
                                     {{ $report->adAccount->account_name }}
                                 </h3>
 
@@ -187,7 +191,8 @@ with(
                     <p class="text-gray-500 mb-6">最初のAIレポートを作成しましょう</p>
                     <a href="/reports/generate" class="btn btn-primary inline-flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4v16m8-8H4" />
                         </svg>
                         レポートを作成
                     </a>
