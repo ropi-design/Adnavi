@@ -68,9 +68,10 @@ $checkSync = function ($accountId) {
                                         </svg>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <h3 class="font-bold text-lg text-gray-900 truncate">
+                                        <h3 class="font-bold text-lg truncate" style="color: #ffffff;">
                                             {{ $account->account_name }}</h3>
-                                        <p class="text-sm text-gray-500 font-mono">ID: {{ $account->customer_id }}</p>
+                                        <p class="text-sm font-mono" style="color: #9ca3af;">ID:
+                                            {{ $account->customer_id }}</p>
                                     </div>
                                 </div>
                             </div>

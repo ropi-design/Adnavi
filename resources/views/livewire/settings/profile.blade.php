@@ -54,8 +54,8 @@ $resendVerificationNotification = function () {
     <div class="max-w-3xl mx-auto">
         {{-- ヘッダー --}}
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">プロフィール設定</h1>
-            <p class="text-gray-600 mt-2">名前とメールアドレスを更新できます</p>
+            <h1 class="text-3xl font-bold" style="color: #ffffff;">プロフィール設定</h1>
+            <p class="mt-2" style="color: #ffffff;">名前とメールアドレスを更新できます</p>
         </div>
 
         {{-- メッセージ --}}
@@ -75,11 +75,12 @@ $resendVerificationNotification = function () {
             <form wire:submit="updateProfileInformation" class="space-y-6">
                 {{-- 名前 --}}
                 <div>
-                    <label for="name" class="block text-sm font-bold text-gray-900 mb-2">
+                    <label for="name" class="block text-sm font-bold mb-2" style="color: #ffffff;">
                         名前
                     </label>
                     <input id="name" type="text" wire:model="name" required autofocus autocomplete="name"
-                        class="form-input" />
+                        class="w-full px-4 py-2.5 rounded-lg transition-colors"
+                        style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;" />
                     @error('name')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -87,11 +88,12 @@ $resendVerificationNotification = function () {
 
                 {{-- メールアドレス --}}
                 <div>
-                    <label for="email" class="block text-sm font-bold text-gray-900 mb-2">
+                    <label for="email" class="block text-sm font-bold mb-2" style="color: #ffffff;">
                         メールアドレス
                     </label>
                     <input id="email" type="email" wire:model="email" required autocomplete="email"
-                        class="form-input" />
+                        class="w-full px-4 py-2.5 rounded-lg transition-colors"
+                        style="background-color: #ffffff; color: #000000; border: 2px solid #e5e7eb;" />
                     @error('email')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -118,7 +120,10 @@ $resendVerificationNotification = function () {
 
                 {{-- 保存ボタン --}}
                 <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
-                    <button type="submit" class="btn btn-primary" data-test="update-profile-button">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+                        style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;"
+                        data-test="update-profile-button">
                         保存
                     </button>
                 </div>
@@ -127,11 +132,12 @@ $resendVerificationNotification = function () {
 
         {{-- アカウント削除 --}}
         <div class="card p-8 mt-8 border-red-200">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">アカウント削除</h2>
-            <p class="text-gray-600 mb-6">
+            <h2 class="text-xl font-bold mb-4" style="color: #ffffff;">アカウント削除</h2>
+            <p class="mb-6" style="color: #ffffff;">
                 アカウントを削除すると、すべてのデータが完全に削除されます。この操作は取り消せません。
             </p>
-            <button class="btn btn-danger" onclick="alert('この機能は実装中です')">
+            <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+                style="background-color: #dc2626; color: #ffffff; border-color: #b91c1c;" onclick="alert('この機能は実装中です')">
                 アカウントを削除
             </button>
         </div>
