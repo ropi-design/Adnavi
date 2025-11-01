@@ -409,36 +409,35 @@ $refresh = function () {
                 </div>
             </div>
 
-            {{-- 1列目2行目: インプレッション (IMP) --}}
+            {{-- 1列目2行目: 費用 (Cost) --}}
             <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-[#0EA5E9]" fill="none" stroke="currentColor"
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                                style="background-color: rgba(249, 115, 22, 0.3);">
+                                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.05.402 2.75 1.015M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.05-.402-2.75-1.015M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-400">インプレッション</p>
-                                <p class="text-xs text-gray-500">IMP</p>
+                                <p class="text-sm font-medium text-gray-400">費用</p>
+                                <p class="text-xs text-gray-500">Cost</p>
                             </div>
                         </div>
                         <p class="text-3xl font-bold text-white mb-2">
-                            {{ number_format($metrics['impressions']['value']) }}
+                            ¥{{ number_format($metrics['cost']['value']) }}
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
                             <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                    d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
                             </svg>
                             <span
-                                class="text-sm font-semibold text-green-700">+{{ number_format($metrics['impressions']['change'], 1) }}%</span>
+                                class="text-sm font-semibold text-green-700">{{ number_format($metrics['cost']['change'], 1) }}%</span>
                         </div>
                     </div>
                 </div>
@@ -512,35 +511,36 @@ $refresh = function () {
                 </div>
             </div>
 
-            {{-- 1列目3行目: 費用 (Cost) --}}
+            {{-- 1列目3行目: インプレッション (IMP) --}}
             <div class="bg-zinc-900 rounded-xl shadow-sm border border-zinc-700 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center"
-                                style="background-color: rgba(249, 115, 22, 0.3);">
-                                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor"
+                            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-[#0EA5E9]" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.05.402 2.75 1.015M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.05-.402-2.75-1.015M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-400">費用</p>
-                                <p class="text-xs text-gray-500">Cost</p>
+                                <p class="text-sm font-medium text-gray-400">インプレッション</p>
+                                <p class="text-xs text-gray-500">IMP</p>
                             </div>
                         </div>
                         <p class="text-3xl font-bold text-white mb-2">
-                            ¥{{ number_format($metrics['cost']['value']) }}
+                            {{ number_format($metrics['impressions']['value']) }}
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
                             <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
                             <span
-                                class="text-sm font-semibold text-green-700">{{ number_format($metrics['cost']['change'], 1) }}%</span>
+                                class="text-sm font-semibold text-green-700">+{{ number_format($metrics['impressions']['change'], 1) }}%</span>
                         </div>
                     </div>
                 </div>

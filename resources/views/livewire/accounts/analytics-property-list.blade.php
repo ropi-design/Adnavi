@@ -62,10 +62,11 @@ mount(function () {
                                 @endif
                             </div>
                         </div>
-                        <button
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                        <a href="/accounts/analytics/{{ $property->id }}"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors border-2"
+                            style="background-color: #ffffff; color: #000000; border-color: #e5e7eb;">
                             詳細
-                        </button>
+                        </a>
                     </div>
                 </div>
             @endforeach

@@ -17,7 +17,8 @@ return [
     'api_key' => env('GEMINI_API_KEY'),
 
     // モデル名
-    'model' => env('GEMINI_MODEL', 'gemini-1.5-pro-latest'),
+    // 利用可能なモデル: gemini-1.5-pro-latest, gemini-1.5-flash-latest, gemini-1.5-pro, gemini-1.5-flash
+    'model' => env('GEMINI_MODEL', 'gemini-1.5-flash-latest'),
 
     // Vertex AI設定（オプション）
     'vertex_ai' => [

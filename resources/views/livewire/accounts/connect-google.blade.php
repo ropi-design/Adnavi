@@ -45,8 +45,8 @@ $disconnect = function () {
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Google アカウント連携</h1>
-                    <p class="text-gray-600 mt-1">広告データの分析に必要な権限を設定します</p>
+                    <h1 class="text-3xl font-bold" style="color: #ffffff;">Google アカウント連携</h1>
+                    <p class="mt-1" style="color: #ffffff;">広告データの分析に必要な権限を設定します</p>
                 </div>
             </div>
 

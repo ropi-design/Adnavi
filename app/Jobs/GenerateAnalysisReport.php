@@ -42,7 +42,7 @@ class GenerateAnalysisReport implements ShouldQueue
                 $data['ad_data'],
                 $data['analytics_data'],
                 $data['keyword_data'] ?? []
-            );
+            ) ?? [];
 
             $rawText = $ai['raw_text'] ?? null;
             $parsed = $ai['parsed'] ?? null;

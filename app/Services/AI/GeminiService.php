@@ -15,6 +15,14 @@ class GeminiService
     {
         $this->apiKey = config('gemini.api_key');
         $this->model = config('gemini.model');
+
+        // APIキーの検証
+        if (empty($this->apiKey)) {
+            Log::error('GEMINI_API_KEY is not configured in .env file');
+        }
+        if (empty($this->model)) {
+            Log::error('GEMINI_MODEL is not configured in .env file');
+        }
     }
 
     /**
@@ -55,7 +63,11 @@ class GeminiService
                 ];
             }
 
-            Log::error('Gemini API error: ' . $response->body());
+            // エラーレスポンスの詳細をログ
+            $errorBody = $response->body();
+            $status = $response->status();
+            Log::error("Gemini API error (status: {$status}): {$errorBody}");
+
             return [
                 'parsed' => null,
                 'raw' => null,
@@ -78,22 +90,59 @@ class GeminiService
     protected function parseResponse(array $data): array
     {
         if (!isset($data['candidates'][0]['content']['parts'][0]['text'])) {
+            Log::warning('Gemini response missing text content');
             return ['parsed' => null, 'raw_text' => null];
         }
 
         $text = $data['candidates'][0]['content']['parts'][0]['text'];
 
-        // JSONを探してパース
-        if (preg_match('/\{[\s\S]*\}/', $text, $matches)) {
-            try {
-                $parsed = json_decode($matches[0], true);
-                return ['parsed' => $parsed, 'raw_text' => $text];
-            } catch (\Exception $e) {
-                Log::error('Failed to parse JSON from Gemini: ' . $e->getMessage());
+        // テキストから先頭のマークダウンコードブロックや余計なテキストを除去
+        $text = preg_replace('/^[\s\S]*?```(?:json)?\s*/i', '', $text);
+        $text = preg_replace('/```\s*[\s\S]*$/i', '', $text);
+        $text = trim($text);
+
+        // ネストされたJSONを正確にマッチ
+        $depth = 0;
+        $startPos = strpos($text, '{');
+
+        if ($startPos === false) {
+            Log::warning('No opening brace found in response');
+            return ['parsed' => null, 'raw_text' => $text];
+        }
+
+        $jsonEndPos = $startPos;
+        for ($i = $startPos; $i < strlen($text); $i++) {
+            $char = $text[$i];
+            if ($char === '{') {
+                $depth++;
+            } elseif ($char === '}') {
+                $depth--;
+                if ($depth === 0) {
+                    $jsonEndPos = $i + 1;
+                    break;
+                }
             }
         }
 
+        if ($depth !== 0) {
+            Log::warning('Unbalanced braces in JSON response');
+            return ['parsed' => null, 'raw_text' => $text];
+        }
+
+        $jsonText = substr($text, $startPos, $jsonEndPos - $startPos);
+
+        try {
+            $parsed = json_decode($jsonText, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($parsed)) {
+                return ['parsed' => $parsed, 'raw_text' => $text];
+            }
+            Log::error('JSON decode error: ' . json_last_error_msg());
+        } catch (\Exception $e) {
+            Log::error('Failed to parse JSON from Gemini: ' . $e->getMessage());
+        }
+
         // JSON形式でない場合はraw_textのみ返す
+        Log::warning('No valid JSON found in Gemini response');
         return ['parsed' => null, 'raw_text' => $text];
     }
 
@@ -106,8 +155,15 @@ class GeminiService
         $result = $this->generateContent($prompt);
         if (is_array($result)) {
             $result['prompt'] = $prompt;
+            return $result;
         }
-        return $result;
+        // API呼び出し失敗時はpromptだけ返す
+        return [
+            'parsed' => null,
+            'raw' => null,
+            'raw_text' => null,
+            'prompt' => $prompt,
+        ];
     }
 
     /**
