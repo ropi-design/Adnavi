@@ -181,7 +181,7 @@ class GenerateAnalysisReport implements ShouldQueue
         $sanitizedRecommendations = [];
         if (!empty($result['recommendations']) && is_array($result['recommendations'])) {
             foreach ($result['recommendations'] as $rec) {
-                $sanitizedRecommendations[] = [
+                $sanitizedRec = [
                     'insight_index' => (int)($rec['insight_index'] ?? 0),
                     'title' => (string)($rec['title'] ?? ''),
                     'description' => (string)($rec['description'] ?? ''),
@@ -190,6 +190,11 @@ class GenerateAnalysisReport implements ShouldQueue
                     'difficulty' => $this->normalizeDifficulty($rec['difficulty'] ?? 'medium'),
                     'specific_actions' => isset($rec['specific_actions']) && is_array($rec['specific_actions']) ? $rec['specific_actions'] : [],
                 ];
+                // keyword_suggestionsがあればそのまま追加
+                if (isset($rec['keyword_suggestions']) && is_array($rec['keyword_suggestions'])) {
+                    $sanitizedRec['keyword_suggestions'] = $rec['keyword_suggestions'];
+                }
+                $sanitizedRecommendations[] = $sanitizedRec;
             }
         }
 

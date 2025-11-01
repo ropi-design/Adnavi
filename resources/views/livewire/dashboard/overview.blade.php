@@ -52,6 +52,16 @@ $loadMetrics = function () {
             'change' => -12.1,
             'trend' => 'down',
         ],
+        'cpc' => [
+            'value' => 24.29,
+            'change' => -6.2,
+            'trend' => 'down',
+        ],
+        'cvr' => [
+            'value' => 4.14,
+            'change' => 0.5,
+            'trend' => 'up',
+        ],
     ];
 
     $this->loading = false;
@@ -87,7 +97,7 @@ $refresh = function () {
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-[#0EA5E9] rounded-lg flex items-center justify-center">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: #4285F4;">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -100,7 +110,8 @@ $refresh = function () {
                 </div>
 
                 <button wire:click="refresh" wire:loading.attr="disabled"
-                    class="flex items-center gap-2 px-4 py-2 bg-[#0EA5E9] text-white rounded-lg hover:bg-[#0c8cc7] transition-colors disabled:opacity-50 shadow-sm text-sm">
+                    class="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 shadow-sm text-sm hover:opacity-90"
+                    style="background-color: #4285F4;">
                     <svg class="w-4 h-4" wire:loading.class="animate-spin" wire:target="refresh" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -115,61 +126,63 @@ $refresh = function () {
     {{-- 期間選択 --}}
     <div class="mb-6 flex gap-2 bg-white p-2 rounded-xl shadow-sm border border-gray-200">
         <button wire:click="changePeriod('today')" type="button"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'today' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'today' ? 'text-white' : 'text-gray-700 hover:bg-gray-100' }}"
+            style="{{ $selectedPeriod === 'today' ? 'background-color: #4285F4;' : '' }}">
             今日
         </button>
         <button wire:click="changePeriod('yesterday')" type="button"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'yesterday' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'yesterday' ? 'text-white' : 'text-gray-700 hover:bg-gray-100' }}"
+            style="{{ $selectedPeriod === 'yesterday' ? 'background-color: #4285F4;' : '' }}">
             昨日
         </button>
         <button wire:click="changePeriod('week')" type="button"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'week' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'week' ? 'text-white' : 'text-gray-700 hover:bg-gray-100' }}"
+            style="{{ $selectedPeriod === 'week' ? 'background-color: #4285F4;' : '' }}">
             今週
         </button>
         <button wire:click="changePeriod('month')" type="button"
-            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'month' ? 'bg-[#0EA5E9] text-white' : 'text-gray-700 hover:bg-gray-100' }}">
+            class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap {{ $selectedPeriod === 'month' ? 'text-white' : 'text-gray-700 hover:bg-gray-100' }}"
+            style="{{ $selectedPeriod === 'month' ? 'background-color: #4285F4;' : '' }}">
             今月
         </button>
     </div>
 
     {{-- メトリクスカード --}}
+    {{-- 
+        レイアウト構造:
+        - 各広告プラットフォームごとに列を割り当て
+        - 現在: Google広告のみ（1列目）
+        - 将来: Meta広告（2列目）、Yahoo!広告（3列目）を追加予定
+        
+        各列の構成:
+        - 1行目: プラットフォーム見出しカード
+        - 以降: メトリクスカード（IMP, Cost, CTs, CTR, CPC, CV, CVR, CPA）
+    --}}
 
     @if ($metrics && !$loading)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
 
-            {{-- インプレッション --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                <div class="flex items-start justify-between mb-4">
+            {{-- 1列目1行目: Google広告 --}}
+            {{-- TODO: 将来的にMeta広告、Yahoo!広告も追加可能な構造にする --}}
+            <div class="rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                style="background-color: #4285F4;">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                        </svg>
+                    </div>
                     <div>
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-[#0EA5E9]" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </div>
-                            <p class="text-sm font-medium text-gray-600">インプレッション</p>
-                        </div>
-                        <p class="text-3xl font-bold text-gray-900 mb-2">
-                            {{ number_format($metrics['impressions']['value']) }}
-                        </p>
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
-                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
-                            <span
-                                class="text-sm font-semibold text-green-700">+{{ number_format($metrics['impressions']['change'], 1) }}%</span>
-                        </div>
+                        <h3 class="text-xl font-bold text-white" style="color: white;">Google広告</h3>
+                        <p class="text-sm text-white/90" style="color: rgba(255, 255, 255, 0.9);">広告パフォーマンス</p>
                     </div>
                 </div>
             </div>
 
-            {{-- クリック数 --}}
+            {{-- 2列目1行目: クリック数 (CTs) --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
@@ -181,7 +194,7 @@ $refresh = function () {
                                         d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
                                 </svg>
                             </div>
-                            <p class="text-sm font-medium text-gray-600">クリック数</p>
+                            <p class="text-sm font-medium text-gray-600">CTs</p>
                         </div>
                         <p class="text-3xl font-bold text-gray-900 mb-2">
                             {{ number_format($metrics['clicks']['value']) }}
@@ -199,7 +212,7 @@ $refresh = function () {
                 </div>
             </div>
 
-            {{-- コンバージョン --}}
+            {{-- 3列目1行目: コンバージョン (CV) --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
@@ -211,7 +224,7 @@ $refresh = function () {
                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
-                            <p class="text-sm font-medium text-gray-600">コンバージョン</p>
+                            <p class="text-sm font-medium text-gray-600">CV</p>
                         </div>
                         <p class="text-3xl font-bold text-gray-900 mb-2">
                             {{ number_format($metrics['conversions']['value']) }}
@@ -229,37 +242,39 @@ $refresh = function () {
                 </div>
             </div>
 
-            {{-- 費用 --}}
+            {{-- 1列目2行目: インプレッション (IMP) --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor"
+                            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-[#0EA5E9]" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.05.402 2.75 1.015M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.05-.402-2.75-1.015M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                             </div>
-                            <p class="text-sm font-medium text-gray-600">費用</p>
+                            <p class="text-sm font-medium text-gray-600">IMP</p>
                         </div>
                         <p class="text-3xl font-bold text-gray-900 mb-2">
-                            ¥{{ number_format($metrics['cost']['value']) }}
+                            {{ number_format($metrics['impressions']['value']) }}
                         </p>
                         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
                             <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
                             <span
-                                class="text-sm font-semibold text-green-700">{{ number_format($metrics['cost']['change'], 1) }}%</span>
+                                class="text-sm font-semibold text-green-700">+{{ number_format($metrics['impressions']['change'], 1) }}%</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- CTR --}}
+            {{-- 2列目2行目: クリック率 (CTR) --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>
@@ -289,7 +304,97 @@ $refresh = function () {
                 </div>
             </div>
 
-            {{-- CPA --}}
+            {{-- 3列目2行目: コンバージョン率 (CVR) --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-10 h-10 bg-cyan-50 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <p class="text-sm font-medium text-gray-600">CVR</p>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                            {{ number_format($metrics['cvr']['value'], 2) }}%
+                        </p>
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                            <span
+                                class="text-sm font-semibold text-green-700">+{{ number_format($metrics['cvr']['change'], 1) }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 1列目3行目: 費用 (Cost) --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.05.402 2.75 1.015M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.05-.402-2.75-1.015M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <p class="text-sm font-medium text-gray-600">Cost</p>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                            ¥{{ number_format($metrics['cost']['value']) }}
+                        </p>
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+                            </svg>
+                            <span
+                                class="text-sm font-semibold text-green-700">{{ number_format($metrics['cost']['change'], 1) }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 2列目3行目: クリック単価 (CPC) --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.05.402 2.75 1.015M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.05-.402-2.75-1.015M15 8a3 3 0 11-6 0 3 3 0 016 0zm3 11a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <p class="text-sm font-medium text-gray-600">CPC</p>
+                        </div>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">
+                            ¥{{ number_format($metrics['cpc']['value'], 2) }}
+                        </p>
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-md">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+                            </svg>
+                            <span
+                                class="text-sm font-semibold text-green-700">{{ number_format($metrics['cpc']['change'], 1) }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 3列目3行目: CPA --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                 <div class="flex items-start justify-between mb-4">
                     <div>

@@ -22,6 +22,7 @@ class GeminiService
      */
     public function generateContent(string $prompt, array $options = []): ?array
     {
+        Log::info("GeminiService: Calling API with model {$this->model}");
         try {
             $url = "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}";
 
@@ -42,6 +43,7 @@ class GeminiService
                     ),
                 ]);
 
+            Log::info("GeminiService: Response status " . $response->status());
             if ($response->successful()) {
                 $data = $response->json();
 
@@ -61,6 +63,7 @@ class GeminiService
             ];
         } catch (\Exception $e) {
             Log::error('Gemini Service error: ' . $e->getMessage());
+            Log::error('Gemini Service stack: ' . $e->getTraceAsString());
             return [
                 'parsed' => null,
                 'raw' => null,
