@@ -40,9 +40,9 @@ RUN php artisan migrate --force \
     && php artisan route:cache \
     && php artisan view:cache
 
-# ポートを公開（Renderが自動で設定するポート）
-EXPOSE $PORT
+# ポートを公開（Renderが自動で設定するポートを使用）
+EXPOSE 8000
 
-# アプリケーションを起動
+# アプリケーションを起動（Renderが$PORT環境変数を自動設定）
 CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
 
