@@ -26,11 +26,24 @@
 }
 
 @layer theme {
+    /* ライトモード */
+    :root {
+        --theme-bg: #ffffff;
+        --theme-text: #1f2937;
+        --theme-border: #e5e7eb;
+        --theme-card-bg: #ffffff;
+        --theme-card-border: #e5e7eb;
+    }
+    
     .dark {
         --color-accent: var(--color-white);
         --color-accent-content: var(--color-white);
         --color-accent-foreground: var(--color-neutral-800);
         --theme-bg: #000000;
+        --theme-text: #ffffff;
+        --theme-border: #374151;
+        --theme-card-bg: rgba(255, 255, 255, 0.05);
+        --theme-card-border: #374151;
     }
     
     /* Slack風テーマカラー */
