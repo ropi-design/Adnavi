@@ -17,13 +17,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Node.jsをインストール（nvm経由）
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash \
-    && export NVM_DIR="$HOME/.nvm" \
-    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
-    && nvm install 20 \
-    && nvm alias default 20 \
-    && nvm use default
+# Node.jsをインストール（公式バイナリから）
+RUN curl -fsSL https://nodejs.org/dist/v20.11.0/node-v20.11.0-linux-x64.tar.xz -o node.tar.xz \
+    && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
+    && rm node.tar.xz \
+    && npm install -g npm@latest
 
 # Composerをインストール
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -37,8 +35,6 @@ COPY package.json package-lock.json ./
 
 # 依存関係をインストール
 RUN composer install --no-dev --optimize-autoloader --no-scripts \
-    && export NVM_DIR="$HOME/.nvm" \
-    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
     && npm ci \
     && npm cache clean --force
 
@@ -51,9 +47,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
 # ビルド時にアセットをビルド
-RUN export NVM_DIR="$HOME/.nvm" \
-    && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" \
-    && npm run build
+RUN npm run build
 
 # 起動スクリプトをコピー
 COPY docker-entrypoint.sh /usr/local/bin/

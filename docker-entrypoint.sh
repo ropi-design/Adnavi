@@ -1,9 +1,5 @@
-#!/bin/bash
+#!/bin/sh
 set -e
-
-# NVMを読み込む
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # マイグレーションを実行
 php artisan migrate --force || true
