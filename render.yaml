@@ -2,7 +2,7 @@ services:
   # Laravel Web Application
   - type: web
     name: adnavi
-    runtime: php
+    env: php
     plan: starter
     buildCommand: |
       composer install --no-dev --optimize-autoloader &&
@@ -71,7 +71,7 @@ services:
   # Queue Worker (optional, for background jobs)
   - type: worker
     name: adnavi-queue
-    runtime: php
+    env: php
     plan: starter
     buildCommand: |
       composer install --no-dev --optimize-autoloader &&
