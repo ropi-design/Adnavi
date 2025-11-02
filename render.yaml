@@ -1,0 +1,121 @@
+services:
+  # Laravel Web Application
+  - type: web
+    name: adnavi
+    runtime: php
+    plan: starter
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader &&
+      npm ci &&
+      npm run build &&
+      php artisan migrate --force &&
+      php artisan config:cache &&
+      php artisan route:cache &&
+      php artisan view:cache
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        sync: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: adnavi-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: adnavi-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: adnavi-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: adnavi-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: adnavi-db
+          property: password
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: QUEUE_CONNECTION
+        value: database
+
+  # PostgreSQL Database
+  - type: pspg
+    name: adnavi-db
+    plan: starter
+    databaseName: adnavi
+    databaseUser: adnavi
+
+  # Queue Worker (optional, for background jobs)
+  - type: worker
+    name: adnavi-queue
+    runtime: php
+    plan: starter
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader &&
+      php artisan config:cache
+    startCommand: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: adnavi-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: adnavi-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: adnavi-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: adnavi-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: adnavi-db
+          property: password
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: QUEUE_CONNECTION
+        value: database
