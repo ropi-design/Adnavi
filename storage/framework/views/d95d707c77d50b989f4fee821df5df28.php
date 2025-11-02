@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Google\GoogleAnalyticsService;
 use Illuminate\Support\Facades\Auth;
 
 ?>
@@ -54,8 +55,16 @@ use Illuminate\Support\Facades\Auth;
                     </div>
 
                     <div class="flex gap-3">
+                        <button type="button" wire:click="syncAnalyticsProperties"
+                            class="flex items-center gap-2 px-6 py-3 text-lg flex-1 justify-center shadow-lg hover:shadow-xl bg-white border-2 border-blue-300 text-blue-600 font-semibold rounded-lg transition-colors hover:bg-blue-50">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Analyticsプロパティを同期
+                        </button>
                         <button type="button" wire:click="disconnect"
-                            class="flex items-center gap-2 px-6 py-3 text-lg w-full justify-center shadow-lg hover:shadow-xl bg-white border-2 border-red-300 text-red-600 font-semibold rounded-lg transition-colors hover:bg-red-50">
+                            class="flex items-center gap-2 px-6 py-3 text-lg flex-1 justify-center shadow-lg hover:shadow-xl bg-white border-2 border-red-300 text-red-600 font-semibold rounded-lg transition-colors hover:bg-red-50">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />
@@ -112,7 +121,8 @@ use Illuminate\Support\Facades\Auth;
 
                         <button type="button" wire:click="connect"
                             class="flex items-center gap-3 px-6 py-3 text-lg w-full justify-center shadow-lg hover:shadow-xl bg-white border-2 border-gray-300 text-gray-900 font-semibold rounded-lg transition-colors hover:bg-gray-50">
-                            <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                             </svg>

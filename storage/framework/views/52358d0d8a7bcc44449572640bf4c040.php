@@ -67,7 +67,7 @@ use Illuminate\Support\Facades\Auth;
                     <div>
                         <span class="text-gray-400" style="color: #9ca3af;">Googleアカウント:</span>
                         <span class="font-bold ml-2" style="color: #ffffff;">
-                            <?php echo e($property->googleAccount->email); ?>
+                            <?php echo e($property->googleAccount ? $property->googleAccount->email : 'N/A'); ?>
 
                         </span>
                     </div>

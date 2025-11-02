@@ -16,17 +16,50 @@ mount(function ($id = null) {
 $loadProperty = function ($id = null) {
     $this->loading = true;
 
-    // IDがない場合は最初のアクティブなプロパティを取得
-    if ($id === null) {
-        $this->property = AnalyticsProperty::with(['googleAccount', 'analyticsMetricsDaily', 'analysisReports'])
-            ->where('user_id', Auth::id())
-            ->where('is_active', true)
-            ->latest()
-            ->first();
-    } else {
-        $this->property = AnalyticsProperty::with(['googleAccount', 'analyticsMetricsDaily', 'analysisReports'])
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
+    try {
+        $userId = Auth::id();
+
+        // IDがない場合は最初のプロパティを取得（まずアクティブなものを探し、なければ全てから最新を取得）
+        if ($id === null) {
+            // まずアクティブなプロパティを探す
+            $query = AnalyticsProperty::with(['googleAccount', 'analyticsMetricsDaily', 'analysisReports'])
+                ->where('user_id', $userId)
+                ->where('is_active', true)
+                ->latest();
+
+            $this->property = $query->first();
+
+            // アクティブなプロパティが見つからない場合は、全てのプロパティから最新を取得
+            if (!$this->property) {
+                $query = AnalyticsProperty::with(['googleAccount', 'analyticsMetricsDaily', 'analysisReports'])
+                    ->where('user_id', $userId)
+                    ->latest();
+
+                $this->property = $query->first();
+            }
+
+            // デバッグ用ログ（本番環境では削除可能）
+            if (!$this->property) {
+                \Log::warning('Analytics property not found', [
+                    'user_id' => $userId,
+                    'total_properties' => AnalyticsProperty::where('user_id', $userId)->count(),
+                    'active_properties' => AnalyticsProperty::where('user_id', $userId)->where('is_active', true)->count(),
+                ]);
+            }
+        } else {
+            $this->property = AnalyticsProperty::with(['googleAccount', 'analyticsMetricsDaily', 'analysisReports'])
+                ->where('user_id', $userId)
+                ->findOrFail($id);
+        }
+    } catch (\Exception $e) {
+        // エラーが発生した場合もプロパティをnullにして続行
+        $this->property = null;
+        \Log::error('Failed to load analytics property', [
+            'user_id' => Auth::id(),
+            'id' => $id,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
     }
 
     $this->loading = false;
@@ -95,7 +128,7 @@ $loadProperty = function ($id = null) {
                     <div>
                         <span class="text-gray-400" style="color: #9ca3af;">Googleアカウント:</span>
                         <span class="font-bold ml-2" style="color: #ffffff;">
-                            {{ $property->googleAccount->email }}
+                            {{ $property->googleAccount ? $property->googleAccount->email : 'N/A' }}
                         </span>
                     </div>
                     @if ($property->last_synced_at)
