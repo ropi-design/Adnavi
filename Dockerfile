@@ -43,20 +43,13 @@ RUN chown -R www-data:www-data /var/www/html \
 # ビルド時にアセットをビルド
 RUN npm run build
 
+# 起動スクリプトをコピー
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # ポートを公開
 EXPOSE 8000
 
-# 起動スクリプトを作成
-RUN echo '#!/bin/sh\n\
-set -e\n\
-php artisan migrate --force || true\n\
-php artisan storage:link || true\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
-php artisan view:cache\n\
-exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}' > /start.sh \
-    && chmod +x /start.sh
-
 # アプリケーションを起動
-CMD ["/bin/sh", "/start.sh"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
