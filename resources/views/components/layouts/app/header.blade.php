@@ -1,5 +1,26 @@
+@php
+    $user = auth()->user();
+    $theme = $user?->theme ?? 'dark';
+
+    // テーマを解析
+    $themeParts = explode('-', $theme);
+    $colorMode = in_array($themeParts[0] ?? '', ['light', 'dark', 'system']) ? $themeParts[0] ?? 'dark' : 'dark';
+    $themeName = $themeParts[1] ?? 'dark';
+
+    // システムモードの場合はブラウザの設定を確認
+    if ($colorMode === 'system') {
+        // システム設定をJavaScriptで確認する必要があるため、デフォルトはダーク
+        $colorMode = 'dark';
+    }
+
+    // テーマクラスを構築
+    $themeClass = $colorMode === 'light' ? '' : 'dark';
+    if ($colorMode === 'dark' && $themeName !== 'dark') {
+        $themeClass .= ' theme-' . $themeName;
+    }
+@endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $themeClass }}">
 
 <head>
     @include('partials.head')
@@ -45,18 +66,37 @@
         </flux:navbar>
 
         <!-- Desktop User Menu -->
-        <flux:dropdown position="top" align="end">
-            <flux:profile class="cursor-pointer" :initials="auth()->user()->initials()" />
+        <flux:dropdown position="top" align="end"
+            wire:key="user-menu-{{ auth()->id() }}-{{ auth()->user()->avatar }}">
+            <flux:button variant="ghost" class="p-0 h-auto"
+                wire:key="profile-button-{{ auth()->id() }}-{{ auth()->user()->avatar }}">
+                <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
+                    @if (auth()->user()->hasAvatar())
+                        <img src="{{ auth()->user()->avatar_url }}?v={{ time() }}"
+                            alt="{{ auth()->user()->name }}" class="h-full w-full object-cover rounded-lg">
+                    @else
+                        <span
+                            class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white text-xs font-semibold">
+                            {{ auth()->user()->initials() }}
+                        </span>
+                    @endif
+                </span>
+            </flux:button>
 
             <flux:menu>
                 <flux:menu.radio.group>
                     <div class="p-0 text-sm font-normal">
                         <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
                             <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
-                                <span
-                                    class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                    {{ auth()->user()->initials() }}
-                                </span>
+                                @if (auth()->user()->hasAvatar())
+                                    <img src="{{ auth()->user()->avatar_url }}?v={{ time() }}"
+                                        alt="{{ auth()->user()->name }}" class="h-full w-full object-cover rounded-lg">
+                                @else
+                                    <span
+                                        class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                        {{ auth()->user()->initials() }}
+                                    </span>
+                                @endif
                             </span>
 
                             <div class="grid flex-1 text-start text-sm leading-tight">
@@ -96,8 +136,8 @@
         </a>
 
         <flux:navlist variant="outline">
-            <flux:navlist.item icon="layout-grid" :href="route('dashboard')"
-                :current="request()->routeIs('dashboard')" wire:navigate>
+            <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
+                wire:navigate>
                 {{ __('ダッシュボード') }}
             </flux:navlist.item>
 

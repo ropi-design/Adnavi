@@ -81,7 +81,8 @@ GOOGLE_ANALYTICS_DEFAULT_PROPERTY_ID=properties/123456789
 ```env
 GEMINI_DRIVER=api
 GEMINI_API_KEY=your-gemini-api-key-here
-GEMINI_MODEL=gemini-1.5-pro-latest
+GEMINI_MODEL=gemini-2.5-flash
+REQUEST_TIMEOUT_MS=30000
 ```
 
 ### オプション B: Vertex AI（エンタープライズ向け）

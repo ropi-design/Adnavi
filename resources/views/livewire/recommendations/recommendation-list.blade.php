@@ -29,7 +29,7 @@ with(
     fn() => [
         'recommendations' => Recommendation::query()
             ->whereHas('insight.analysisReport', fn($q) => $q->where('user_id', Auth::id()))
-            ->with(['insight.analysisReport.adAccount'])
+            ->with(['insight', 'insight.analysisReport.adAccount'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('title', 'like', "%{$this->search}%")->orWhere('description', 'like', "%{$this->search}%");
@@ -100,6 +100,26 @@ with(
             <div class="p-6 hover:shadow-xl transition-all rounded-xl"
                 style="background-color: #ffffff; border: 2px solid #e5e7eb;">
                 <div class="space-y-4">
+                    {{-- インサイト情報 --}}
+                    @if ($recommendation->insight)
+                        <div class="pb-3 border-b border-gray-200">
+                            <a href="/insights/{{ $recommendation->insight->id }}"
+                                class="inline-flex items-center gap-2 text-xs text-purple-600 hover:text-purple-800 transition-colors mb-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M6.343 6.343l-.707.707m12.728 0l-.707.707M6.343 17.657l-.707.707M17.657 6.343l-.707-.707m-12.728 0l-.707.707m12.728 12.728l-.707.707M17.657 17.657l-.707-.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="font-semibold">{{ $recommendation->insight->title }}</span>
+                            </a>
+                            @if ($recommendation->insight->analysisReport)
+                                <p class="text-xs text-gray-500 mt-1">
+                                    レポート:
+                                    {{ $recommendation->insight->analysisReport->adAccount->account_name ?? 'レポート' }}
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+
                     {{-- ヘッダー --}}
                     <div class="flex items-start justify-between gap-3">
                         <h3 class="font-bold text-lg flex-1 text-gray-900">
@@ -152,14 +172,25 @@ with(
                         </div>
 
                         @if ($recommendation->estimated_impact)
-                            <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                            <div class="flex items-start gap-2 w-full">
+                                <svg class="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                                 </svg>
-                                <span class="text-gray-500">効果:</span>
-                                <span class="font-semibold text-gray-900">{{ $recommendation->estimated_impact }}</span>
+                                <div class="flex-1 min-w-0">
+                                    <span class="text-gray-500 text-sm">効果:</span>
+                                    @php
+                                        // estimated_impactを | で分割して、最初の1行だけ表示
+                                        $impactLines = explode(' | ', $recommendation->estimated_impact);
+                                        $firstLine = $impactLines[0] ?? $recommendation->estimated_impact;
+                                    @endphp
+                                    <p class="font-semibold text-gray-900 text-sm mt-1 line-clamp-2">{{ $firstLine }}
+                                    </p>
+                                    @if (count($impactLines) > 1)
+                                        <p class="text-xs text-gray-500 mt-1">+{{ count($impactLines) - 1 }}件の詳細あり</p>
+                                    @endif
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -167,7 +198,7 @@ with(
                     {{-- アクション --}}
                     <div class="flex gap-2 pt-4 border-t border-gray-200">
                         <a href="/recommendations/{{ $recommendation->id }}"
-                            class="btn btn-primary text-sm flex-1 justify-center">
+                            class="btn btn-primary text-sm flex-1 justify-center" style="color: #000000 !important;">
                             詳細を見る
                         </a>
 

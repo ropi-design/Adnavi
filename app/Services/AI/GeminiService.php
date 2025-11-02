@@ -10,11 +10,13 @@ class GeminiService
     protected string $apiKey;
     protected string $model;
     protected string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
+    protected int $timeoutMs;
 
     public function __construct()
     {
         $this->apiKey = config('gemini.api_key');
-        $this->model = config('gemini.model');
+        $this->model = config('gemini.model', 'gemini-2.5-flash');
+        $this->timeoutMs = (int)config('gemini.request_timeout_ms', 30000);
 
         // APIキーの検証
         if (empty($this->apiKey)) {
@@ -26,30 +28,71 @@ class GeminiService
     }
 
     /**
-     * Gemini APIでコンテンツを生成
+     * Gemini APIでコンテンツを生成（マルチモーダル対応）
+     * 
+     * @param string|array $prompt テキストプロンプトまたはマルチモーダルコンテンツ
+     * @param array $options 生成オプション
+     * @param string|null $imageUrl 画像URL（オプション）
+     * @param string|null $systemInstruction システム指示（オプション）
+     * @return array|null
      */
-    public function generateContent(string $prompt, array $options = []): ?array
+    public function generateContent(string|array $prompt, array $options = [], ?string $imageUrl = null, ?string $systemInstruction = null): ?array
     {
         Log::info("GeminiService: Calling API with model {$this->model}");
         try {
             $url = "{$this->baseUrl}/models/{$this->model}:generateContent?key={$this->apiKey}";
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])
-                ->post($url, [
-                    'contents' => [
-                        [
-                            'parts' => [
-                                ['text' => $prompt],
-                            ],
-                        ],
+            // コンテンツの構築
+            $parts = [];
+
+            // システム指示がある場合
+            if (!empty($systemInstruction)) {
+                $parts[] = ['text' => $systemInstruction];
+            }
+
+            // テキストプロンプト
+            if (is_string($prompt)) {
+                $parts[] = ['text' => $prompt];
+            } elseif (is_array($prompt)) {
+                $parts = array_merge($parts, $prompt);
+            }
+
+            // 画像URLがある場合
+            if (!empty($imageUrl)) {
+                $parts[] = [
+                    'inline_data' => [
+                        'mime_type' => $this->detectImageMimeType($imageUrl),
+                        'data' => $this->fetchImageAsBase64($imageUrl),
                     ],
-                    'generationConfig' => array_merge(
-                        config('gemini.generation_config', []),
-                        $options
-                    ),
-                ]);
+                ];
+            }
+
+            $payload = [
+                'contents' => [
+                    [
+                        'parts' => $parts,
+                    ],
+                ],
+                'generationConfig' => array_merge(
+                    config('gemini.generation_config', []),
+                    $options
+                ),
+            ];
+
+            // システム指示がある場合は別フィールドに設定（Gemini 2.5対応）
+            if (!empty($systemInstruction)) {
+                $payload['systemInstruction'] = [
+                    'parts' => [
+                        ['text' => $systemInstruction],
+                    ],
+                ];
+            }
+
+            $response = Http::timeout($this->timeoutMs / 1000)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])
+                ->post($url, $payload);
 
             Log::info("GeminiService: Response status " . $response->status());
             if ($response->successful()) {
@@ -73,6 +116,14 @@ class GeminiService
                 'raw' => null,
                 'raw_text' => null,
             ];
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Gemini Service timeout: ' . $e->getMessage());
+            return [
+                'parsed' => null,
+                'raw' => null,
+                'raw_text' => null,
+                'error' => 'Request timeout',
+            ];
         } catch (\Exception $e) {
             Log::error('Gemini Service error: ' . $e->getMessage());
             Log::error('Gemini Service stack: ' . $e->getTraceAsString());
@@ -80,8 +131,39 @@ class GeminiService
                 'parsed' => null,
                 'raw' => null,
                 'raw_text' => null,
+                'error' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * 画像URLからBase64データを取得
+     */
+    protected function fetchImageAsBase64(string $imageUrl): string
+    {
+        try {
+            $imageData = Http::timeout(10)->get($imageUrl)->body();
+            return base64_encode($imageData);
+        } catch (\Exception $e) {
+            Log::error("Failed to fetch image from URL: {$imageUrl} - " . $e->getMessage());
+            throw new \RuntimeException("Failed to fetch image: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * 画像URLからMIMEタイプを検出
+     */
+    protected function detectImageMimeType(string $imageUrl): string
+    {
+        $extension = strtolower(pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION));
+
+        return match ($extension) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            default => 'image/jpeg', // デフォルト
+        };
     }
 
     /**
@@ -227,7 +309,17 @@ class GeminiService
         }
 
         $prompt .= "要件:\n";
+        $prompt .= "- データを深く分析し、パターン、傾向、異常値を特定してください\n";
+        $prompt .= "- 各インサイトには具体的な数値、比較、パーセンテージを含めてください（例: 「CTRが2.1%と平均2.5%を下回り、改善余地があります」）\n";
+        $prompt .= "- 根本原因分析を行い、なぜ問題が発生しているのかを説明してください\n";
         $prompt .= "- クリック単価(CPC)、CTR、CV、CPAの関係から、どこにボトルネックがあるか診断\n";
+        $prompt .= "- 改善の緊急度と重要度を明確に示してください\n";
+        $prompt .= "- 可能な限り多くのインサイト（最低5つ以上）を生成してください\n";
+        $prompt .= "- 各インサイトには以下の情報を含めてください:\n";
+        $prompt .= "  * 現在の値とベンチマーク値の比較\n";
+        $prompt .= "  * 影響を受ける指標（CTR、CVR、CPAなど）\n";
+        $prompt .= "  * 改善が見込まれる具体的な数値目標\n";
+        $prompt .= "  * データポイント（分析に使用した具体的な数値）\n";
         $prompt .= "- 検索キーワード観点での具体提案（例: 現状キーワードの見直し、除外KW追加、新規KWの追加案3つ以上、ネガティブKW3つ以上）\n";
         $prompt .= "- 広告文の改善例（見出し/説明文の候補を各2-3案。日本語で）\n";
         $prompt .= "- 入札/予算配分/入札戦略の具体調整案\n";
@@ -235,9 +327,9 @@ class GeminiService
 
         $prompt .= "以下のJSON形式で厳密に回答してください（余計なテキストは出力しない）:\n";
         $prompt .= "{\n";
-        $prompt .= '  "overall_performance": { "score": 1-5, "summary": "要点の日本語サマリー" },\n';
+        $prompt .= '  "overall_performance": { "score": 1-5, "summary": "要点の日本語サマリー（200文字以上で詳細に）" },\n';
         $prompt .= '  "insights": [\n';
-        $prompt .= '    { "category": "performance|budget|targeting|creative|conversion", "priority": "high|medium|low", "title": "所見タイトル", "description": "詳細", "impact_score": 1-10, "confidence_score": 0-1 }\n';
+        $prompt .= '    { "category": "performance|budget|targeting|creative|conversion", "priority": "high|medium|low", "title": "詳細な所見タイトル（具体的な数値を含む）", "description": "詳細な説明（現在の値、目標値、影響範囲、根本原因を含む300文字以上）", "impact_score": 1-10, "confidence_score": 0-1, "data_points": { "current_value": 数値, "target_value": 数値, "benchmark": 数値, "affected_metrics": ["指標1", "指標2"] } }\n';
         $prompt .= '  ],\n';
         $prompt .= '  "recommendations": [\n';
         $prompt .= '    {\n';
@@ -256,6 +348,171 @@ class GeminiService
         $prompt .= '    }\n';
         $prompt .= '  ]\n';
         $prompt .= "}\n";
+
+        return $prompt;
+    }
+
+    /**
+     * 改善施策について質問する（Gemini 2.5 Flash対応）
+     */
+    public function askAboutRecommendation(string $question, array $recommendationData, ?string $imageUrl = null): ?string
+    {
+        $prompt = $this->buildRecommendationQuestionPrompt($question, $recommendationData);
+
+        Log::info("Asking question about recommendation", [
+            'question' => $question,
+            'recommendation_title' => $recommendationData['title'] ?? 'N/A',
+            'has_image' => !empty($imageUrl),
+        ]);
+
+        try {
+            $result = $this->generateContent($prompt, [], $imageUrl);
+
+            if ($result && isset($result['raw_text'])) {
+                Log::info("Question answered successfully");
+                return trim($result['raw_text']);
+            }
+
+            if (isset($result['error'])) {
+                Log::error("Gemini API question failed: " . $result['error']);
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Gemini question error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * インサイトについて質問する（Gemini 2.5 Flash対応）
+     */
+    public function askAboutInsight(string $question, array $insightData, ?string $imageUrl = null): ?string
+    {
+        $prompt = $this->buildInsightQuestionPrompt($question, $insightData);
+
+        Log::info("Asking question about insight", [
+            'question' => $question,
+            'insight_title' => $insightData['title'] ?? 'N/A',
+            'has_image' => !empty($imageUrl),
+        ]);
+
+        try {
+            $result = $this->generateContent($prompt, [], $imageUrl);
+
+            if ($result && isset($result['raw_text'])) {
+                Log::info("Question answered successfully");
+                return trim($result['raw_text']);
+            }
+
+            if (isset($result['error'])) {
+                Log::error("Gemini API question failed: " . $result['error']);
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Gemini question error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * インサイト質問用のプロンプトを構築
+     */
+    protected function buildInsightQuestionPrompt(string $question, array $insightData): string
+    {
+        $prompt = "あなたはデジタルマーケティングの専門家です。以下のインサイトについて質問に答えてください。\n\n";
+
+        $prompt .= "## インサイトの詳細\n";
+        $prompt .= "タイトル: {$insightData['title']}\n";
+        $prompt .= "説明: {$insightData['description']}\n";
+
+        if (!empty($insightData['category'])) {
+            $categoryLabel = match ($insightData['category']) {
+                'performance' => 'パフォーマンス',
+                'budget' => '予算',
+                'targeting' => 'ターゲティング',
+                'creative' => 'クリエイティブ',
+                'conversion' => 'コンバージョン',
+                default => $insightData['category'],
+            };
+            $prompt .= "カテゴリ: {$categoryLabel}\n";
+        }
+
+        if (!empty($insightData['priority'])) {
+            $priorityLabel = match ($insightData['priority']) {
+                'high' => '高',
+                'medium' => '中',
+                'low' => '低',
+                default => $insightData['priority'],
+            };
+            $prompt .= "優先度: {$priorityLabel}\n";
+        }
+
+        if (!empty($insightData['impact_score'])) {
+            $prompt .= "インパクトスコア: {$insightData['impact_score']}/10\n";
+        }
+
+        if (!empty($insightData['confidence_score'])) {
+            $prompt .= "信頼度: " . number_format($insightData['confidence_score'] * 100, 2) . "%\n";
+        }
+
+        if (!empty($insightData['data_points'])) {
+            $prompt .= "データポイント:\n";
+            $dataPoints = is_array($insightData['data_points']) ? $insightData['data_points'] : json_decode($insightData['data_points'], true);
+            if ($dataPoints) {
+                foreach ($dataPoints as $key => $value) {
+                    if (is_array($value)) {
+                        $prompt .= "  {$key}: " . implode(', ', $value) . "\n";
+                    } else {
+                        $prompt .= "  {$key}: {$value}\n";
+                    }
+                }
+            }
+        }
+
+        $prompt .= "\n## 質問\n";
+        $prompt .= "{$question}\n\n";
+        $prompt .= "上記のインサイトに関する質問に対して、具体的で実践的な回答を日本語で提供してください。";
+
+        return $prompt;
+    }
+
+    /**
+     * 改善施策質問用のプロンプトを構築
+     */
+    protected function buildRecommendationQuestionPrompt(string $question, array $recommendationData): string
+    {
+        $prompt = "あなたはデジタルマーケティングの専門家です。以下の改善施策について質問に答えてください。\n\n";
+
+        $prompt .= "## 改善施策の詳細\n";
+        $prompt .= "タイトル: {$recommendationData['title']}\n";
+        $prompt .= "説明: {$recommendationData['description']}\n";
+
+        if (!empty($recommendationData['estimated_impact'])) {
+            $prompt .= "推定効果: {$recommendationData['estimated_impact']}\n";
+        }
+
+        if (!empty($recommendationData['implementation_difficulty'])) {
+            $difficultyLabel = match ($recommendationData['implementation_difficulty']) {
+                'easy' => '簡単',
+                'medium' => '普通',
+                'hard' => '難しい',
+                default => $recommendationData['implementation_difficulty'],
+            };
+            $prompt .= "実施難易度: {$difficultyLabel}\n";
+        }
+
+        if (!empty($recommendationData['specific_actions']) && is_array($recommendationData['specific_actions'])) {
+            $prompt .= "実施手順:\n";
+            foreach ($recommendationData['specific_actions'] as $index => $action) {
+                $prompt .= ($index + 1) . ". {$action}\n";
+            }
+        }
+
+        $prompt .= "\n## 質問\n";
+        $prompt .= "{$question}\n\n";
+        $prompt .= "上記の改善施策に関する質問に対して、具体的で実践的な回答を日本語で提供してください。";
 
         return $prompt;
     }

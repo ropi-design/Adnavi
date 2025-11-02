@@ -1,12 +1,17 @@
 <?php
 
 use App\Models\Recommendation;
+use App\Services\AI\GeminiService;
 use Illuminate\Support\Facades\Auth;
 use function Livewire\Volt\{state, mount};
 
 state([
     'recommendation' => null,
     'loading' => false,
+    'question' => '',
+    'answer' => null,
+    'asking' => false,
+    'error' => null,
 ]);
 
 mount(function ($id) {
@@ -28,6 +33,41 @@ $updateStatus = function ($status) {
     $this->loadRecommendation($this->recommendation->id);
 
     session()->flash('message', 'ステータスを更新しました');
+};
+
+$askQuestion = function (GeminiService $geminiService) {
+    if (empty($this->question)) {
+        $this->error = '質問を入力してください';
+        return;
+    }
+
+    $this->asking = true;
+    $this->error = null;
+    $this->answer = null;
+
+    try {
+        // 改善施策のデータを準備
+        $recommendationData = [
+            'title' => $this->recommendation->title,
+            'description' => $this->recommendation->description,
+            'estimated_impact' => $this->recommendation->estimated_impact,
+            'implementation_difficulty' => $this->recommendation->implementation_difficulty,
+            'specific_actions' => $this->recommendation->specific_actions ?? [],
+        ];
+
+        // Gemini APIに質問を送信
+        $answer = $geminiService->askAboutRecommendation($this->question, $recommendationData);
+
+        if ($answer) {
+            $this->answer = $answer;
+        } else {
+            $this->error = '回答を取得できませんでした。もう一度お試しください。';
+        }
+    } catch (\Exception $e) {
+        $this->error = 'エラーが発生しました: ' . $e->getMessage();
+    } finally {
+        $this->asking = false;
+    }
 };
 
 ?>
@@ -147,25 +187,42 @@ $updateStatus = function ($status) {
                 <div class="p-6 rounded-xl border-2" style="background-color: #ffffff; border-color: #e5e7eb;">
                     <h3 class="text-xl font-bold mb-4"
                         style="color: #000000; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">推定効果</h3>
-                    <p class="text-3xl font-bold" style="color: #667eea;">
-                        {{ $recommendation->estimated_impact }}</p>
+                    <div class="space-y-3">
+                        @php
+                            // estimated_impactを | で分割して各行を表示
+                            $impactLines = explode(' | ', $recommendation->estimated_impact);
+                        @endphp
+                        @foreach ($impactLines as $line)
+                            <div class="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+                                <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                </svg>
+                                <p class="text-sm font-semibold" style="color: #1e40af;">
+                                    {{ $line }}
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             @endif
         </div>
 
         {{-- 実施手順 --}}
-        @if ($recommendation->implementation_steps)
+        @if ($recommendation->specific_actions && count($recommendation->specific_actions) > 0)
             <div class="card p-6">
                 <h2 class="text-2xl font-bold mb-6" style="color: #ffffff;">実施手順</h2>
                 <div class="space-y-4">
-                    @foreach ($recommendation->implementation_steps as $index => $step)
-                        <div class="flex gap-4">
+                    @foreach ($recommendation->specific_actions as $index => $step)
+                        <div class="flex gap-4 p-4 rounded-lg"
+                            style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);">
                             <div
                                 class="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
                                 {{ $index + 1 }}
                             </div>
                             <div class="flex-1 pt-1">
-                                <p style="color: #ffffff;">{{ $step }}</p>
+                                <p style="color: #ffffff; line-height: 1.7;">{{ $step }}</p>
                             </div>
                         </div>
                     @endforeach
@@ -187,8 +244,25 @@ $updateStatus = function ($status) {
                                 d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                         <span style="color: #000000;">インパクト:</span>
-                        <span class="font-bold"
-                            style="color: #000000;">{{ $recommendation->insight->impact_score }}/10</span>
+                        @php
+                            $impactLabel = match (true) {
+                                $recommendation->insight->impact_score >= 8 => [
+                                    'label' => '大',
+                                    'bg' => 'bg-red-100',
+                                    'text' => 'text-red-800',
+                                ],
+                                $recommendation->insight->impact_score >= 4 => [
+                                    'label' => '中',
+                                    'bg' => 'bg-yellow-100',
+                                    'text' => 'text-yellow-800',
+                                ],
+                                default => ['label' => '小', 'bg' => 'bg-gray-100', 'text' => 'text-gray-800'],
+                            };
+                        @endphp
+                        <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $impactLabel['bg'] }} {{ $impactLabel['text'] }}">
+                            {{ $impactLabel['label'] }}
+                        </span>
                     </div>
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
@@ -219,6 +293,80 @@ $updateStatus = function ($status) {
                         style="color: #ffffff;">{{ $recommendation->created_at->isoFormat('YYYY年MM月DD日 HH:mm') }}</span>
                 </div>
             </div>
+        </div>
+
+        {{-- Gemini AI 質問機能 --}}
+        <div class="card p-6">
+            <h2 class="text-2xl font-bold mb-4" style="color: #ffffff;">
+                <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+                AIに質問する
+            </h2>
+            <p class="text-sm mb-4" style="color: #ffffff; opacity: 0.8;">
+                この改善施策について、Gemini AIに直接質問できます。実施方法や効果について詳しく知りたい場合は質問してください。
+            </p>
+
+            <form wire:submit="askQuestion" class="space-y-4">
+                <div>
+                    <textarea wire:model="question" rows="3" placeholder="例: この施策を実施する上で注意すべき点は？&#10;例: 期待できる効果についてもっと詳しく教えてください"
+                        class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none resize-none"
+                        style="background-color: #ffffff; color: #000000;" wire:loading.attr="disabled"></textarea>
+                    @error('question')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit" wire:loading.attr="disabled"
+                        class="px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2"
+                        style="background-color: #667eea; color: #ffffff;" wire:loading.class="opacity-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            wire:loading.class="animate-spin" wire:target="askQuestion">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span wire:loading.remove wire:target="askQuestion">質問を送信</span>
+                        <span wire:loading wire:target="askQuestion">回答を生成中...</span>
+                    </button>
+                    @if ($answer)
+                        <button type="button" wire:click="$set('question', ''); $set('answer', null);"
+                            class="px-6 py-3 rounded-lg font-semibold transition-all"
+                            style="background-color: #e5e7eb; color: #000000;">
+                            クリア
+                        </button>
+                    @endif
+                </div>
+
+                @if ($error)
+                    <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                        <div class="flex items-center gap-2 text-red-800">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {{ $error }}
+                        </div>
+                    </div>
+                @endif
+
+                @if ($answer)
+                    <div class="p-6 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                        <div class="flex items-start gap-3 mb-3">
+                            <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            <h3 class="text-lg font-bold" style="color: #1e40af;">AI回答</h3>
+                        </div>
+                        <div class="prose max-w-none" style="color: #1e3a8a;">
+                            <p class="whitespace-pre-wrap leading-relaxed">{{ $answer }}</p>
+                        </div>
+                    </div>
+                @endif
+            </form>
         </div>
     @endif
 </div>

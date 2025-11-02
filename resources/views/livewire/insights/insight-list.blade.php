@@ -28,17 +28,20 @@ $updatingCategoryFilter = function () {
 with(
     fn() => [
         'insights' => Insight::query()
-            ->whereHas('analysisReport', fn($q) => $q->where('user_id', Auth::id()))
-            ->with(['analysisReport.adAccount'])
+            ->join('analysis_reports', 'insights.analysis_report_id', '=', 'analysis_reports.id')
+            ->where('analysis_reports.user_id', Auth::id())
+            ->select('insights.*')
+            ->with(['analysisReport.adAccount', 'recommendations'])
+            ->withCount('recommendations')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('title', 'like', "%{$this->search}%")->orWhere('description', 'like', "%{$this->search}%");
+                    $q->where('insights.title', 'like', "%{$this->search}%")->orWhere('insights.description', 'like', "%{$this->search}%");
                 });
             })
-            ->when($this->priorityFilter !== 'all', fn($query) => $query->where('priority', $this->priorityFilter))
-            ->when($this->categoryFilter !== 'all', fn($query) => $query->where('category', $this->categoryFilter))
+            ->when($this->priorityFilter !== 'all', fn($query) => $query->where('insights.priority', $this->priorityFilter))
+            ->when($this->categoryFilter !== 'all', fn($query) => $query->where('insights.category', $this->categoryFilter))
             ->orderByRaw(
-                'CASE priority 
+                'CASE insights.priority 
             WHEN "high" THEN 1 
             WHEN "medium" THEN 2 
             WHEN "low" THEN 3 
@@ -54,7 +57,7 @@ with(
     {{-- ヘッダー --}}
     <div>
         <h1 class="text-4xl font-bold" style="color: #ffffff;">インサイト</h1>
-        <p class="mt-1" style="color: #ffffff;">AIが発見したデータの洞察</p>
+        <p class="mt-1" style="color: #ffffff;">AIによる課題抽出</p>
     </div>
 
     {{-- フィルター --}}
@@ -96,18 +99,36 @@ with(
     {{-- インサイト一覧 --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($insights as $insight)
-            <a href="/insights/{{ $insight->id }}"
-                class="p-6 hover:shadow-xl transition-all cursor-pointer group rounded-xl"
+            <div class="p-6 hover:shadow-xl transition-all rounded-xl group"
                 style="background-color: #ffffff; border: 2px solid #e5e7eb;">
                 <div class="space-y-4">
+                    {{-- レポート情報 --}}
+                    @if ($insight->analysisReport)
+                        <div class="pb-3 border-b border-gray-200">
+                            <a href="/reports/{{ $insight->analysisReport->id }}"
+                                class="inline-flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 transition-colors mb-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span
+                                    class="font-semibold">{{ $insight->analysisReport->adAccount->account_name ?? 'レポート' }}</span>
+                            </a>
+                            <p class="text-xs text-gray-500 mt-1">
+                                {{ $insight->analysisReport->start_date->isoFormat('YYYY/MM/DD') }} 〜
+                                {{ $insight->analysisReport->end_date->isoFormat('YYYY/MM/DD') }}
+                            </p>
+                        </div>
+                    @endif
+
                     {{-- ヘッダー --}}
                     <div class="flex items-start justify-between gap-3">
-                        <div class="flex-1 min-w-0">
+                        <a href="/insights/{{ $insight->id }}" class="flex-1 min-w-0">
                             <h3 class="font-bold text-lg line-clamp-2 group-hover:text-blue-600 transition-colors"
                                 style="color: #000000;">
                                 {{ $insight->title }}
                             </h3>
-                        </div>
+                        </a>
 
                         @php
                             $priorityConfig = match ($insight->priority->value) {
@@ -140,11 +161,13 @@ with(
                     </div>
 
                     {{-- 説明 --}}
-                    <p class="text-sm line-clamp-3" style="color: #000000;">
-                        {{ $insight->description }}
-                    </p>
+                    <a href="/insights/{{ $insight->id }}">
+                        <p class="text-sm line-clamp-3" style="color: #000000;">
+                            {{ $insight->description }}
+                        </p>
+                    </a>
 
-                    {{-- スコア --}}
+                    {{-- スコアと改善施策数 --}}
                     <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
                         <div class="flex items-center gap-2 text-sm">
                             <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +175,25 @@ with(
                                     d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                             <span style="color: #000000;">インパクト:</span>
-                            <span class="font-bold" style="color: #000000;">{{ $insight->impact_score }}/10</span>
+                            @php
+                                $impactLabel = match (true) {
+                                    $insight->impact_score >= 8 => [
+                                        'label' => '大',
+                                        'bg' => 'bg-red-100',
+                                        'text' => 'text-red-800',
+                                    ],
+                                    $insight->impact_score >= 4 => [
+                                        'label' => '中',
+                                        'bg' => 'bg-yellow-100',
+                                        'text' => 'text-yellow-800',
+                                    ],
+                                    default => ['label' => '小', 'bg' => 'bg-gray-100', 'text' => 'text-gray-800'],
+                                };
+                            @endphp
+                            <span
+                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold {{ $impactLabel['bg'] }} {{ $impactLabel['text'] }}">
+                                {{ $impactLabel['label'] }}
+                            </span>
                         </div>
                         <div class="flex items-center gap-2 text-sm">
                             <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
@@ -165,8 +206,22 @@ with(
                                 style="color: #000000;">{{ number_format($insight->confidence_score * 100) }}%</span>
                         </div>
                     </div>
+
+                    {{-- 改善施策へのリンク --}}
+                    @if ($insight->recommendations_count > 0)
+                        <div class="pt-3 border-t border-gray-200">
+                            <a href="/insights/{{ $insight->id }}#recommendations"
+                                class="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:text-purple-800 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                <span>改善施策 ({{ $insight->recommendations_count }})</span>
+                            </a>
+                        </div>
+                    @endif
                 </div>
-            </a>
+            </div>
         @empty
             <div class="col-span-full">
                 <div class="card">

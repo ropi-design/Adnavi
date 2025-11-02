@@ -3,6 +3,7 @@
 use App\Models\AdAccount;
 use App\Models\AnalyticsProperty;
 use App\Models\AnalysisReport;
+use App\Models\GoogleAccount;
 use App\Jobs\GenerateAnalysisReport;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
@@ -12,8 +13,13 @@ new class extends Component {
     #[Validate('required')]
     public string $reportType = 'weekly';
 
-    #[Validate('required|exists:ad_accounts,id')]
+    // 一時的にサンプルデータ用にバリデーションを緩和
+    #[Validate('required')]
     public ?int $adAccountId = null;
+
+    // 本番用のバリデーション（コメントアウト）
+    // #[Validate('required|exists:ad_accounts,id')]
+    // public ?int $adAccountId = null;
 
     #[Validate('nullable|exists:analytics_properties,id')]
     public ?int $analyticsPropertyId = null;
@@ -30,6 +36,21 @@ new class extends Component {
 
     public function mount(): void
     {
+        // 一時的にサンプルデータで表示
+        $sampleAdAccounts = [(object) ['id' => 1, 'account_name' => 'サンプル広告アカウント 1'], (object) ['id' => 2, 'account_name' => 'サンプル広告アカウント 2'], (object) ['id' => 3, 'account_name' => 'サンプル広告アカウント 3']];
+
+        $this->adAccounts = collect($sampleAdAccounts);
+        $this->analyticsProperties = collect([]); // Analyticsプロパティは空で
+
+        $this->startDate = now()->subWeek()->startOfWeek()->format('Y-m-d');
+        $this->endDate = now()->subWeek()->endOfWeek()->format('Y-m-d');
+
+        if ($this->adAccounts->isNotEmpty()) {
+            $this->adAccountId = $this->adAccounts->first()->id;
+        }
+
+        // 本番用のコード（コメントアウト）
+        /*
         $user = Auth::user();
 
         $this->adAccounts = AdAccount::where('user_id', $user->id)->where('is_active', true)->get();
@@ -41,6 +62,7 @@ new class extends Component {
         if ($this->adAccounts->isNotEmpty()) {
             $this->adAccountId = $this->adAccounts->first()->id;
         }
+        */
     }
 
     public function updatedReportType($value): void
@@ -78,6 +100,46 @@ new class extends Component {
         $this->isGenerating = true;
 
         try {
+            // 一時的にサンプルデータで生成
+            // サンプルGoogleAccountを取得または作成
+            $googleAccount = GoogleAccount::firstOrCreate(
+                [
+                    'user_id' => Auth::id(),
+                    'google_id' => 'sample-' . Auth::id(),
+                ],
+                [
+                    'email' => 'sample@example.com',
+                ],
+            );
+
+            // サンプルAdAccountを取得または作成
+            $adAccount = AdAccount::firstOrCreate(
+                [
+                    'user_id' => Auth::id(),
+                    'customer_id' => 'sample-' . Auth::id(),
+                ],
+                [
+                    'google_account_id' => $googleAccount->id,
+                    'account_name' => 'サンプル広告アカウント',
+                    'currency' => 'JPY',
+                    'timezone' => 'Asia/Tokyo',
+                    'is_active' => true,
+                ],
+            );
+
+            // レポートレコードを作成
+            $report = AnalysisReport::create([
+                'user_id' => Auth::id(),
+                'ad_account_id' => $adAccount->id,
+                'analytics_property_id' => $this->analyticsPropertyId,
+                'report_type' => $this->reportType,
+                'start_date' => $this->startDate,
+                'end_date' => $this->endDate,
+                'status' => 'pending',
+            ]);
+
+            // 本番用のコード（コメントアウト）
+            /*
             // レポートレコードを作成
             $report = AnalysisReport::create([
                 'user_id' => Auth::id(),
@@ -88,6 +150,7 @@ new class extends Component {
                 'end_date' => $this->endDate,
                 'status' => 'pending',
             ]);
+            */
 
             // ジョブをディスパッチ（ローカル/同期時は即実行して待機を回避）
             if (config('queue.default', 'sync') === 'sync' || app()->environment('local')) {
@@ -109,7 +172,10 @@ new class extends Component {
     <div class="max-w-4xl mx-auto">
         {{-- ヘッダー --}}
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-white mb-1">AIレポート生成</h1>
+            <div class="inline-flex items-center px-4 py-2 rounded-lg font-semibold text-lg transition-colors border-2 mb-3"
+                style="background-color: #1e40af; color: #ffffff; border-color: #1e3a8a;">
+                AIレポート生成
+            </div>
             <p class="text-sm text-white">Geminiで効果分析を自動実行</p>
         </div>
 
@@ -277,8 +343,20 @@ new class extends Component {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
-                    <span wire:loading.remove wire:target="generate">AIレポート生成</span>
-                    <span wire:loading wire:target="generate">生成中...</span>
+                    <span wire:loading.remove wire:target="generate">
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-md font-semibold text-sm transition-colors border"
+                            style="background-color: rgba(255, 255, 255, 0.2); color: #ffffff; border-color: rgba(255, 255, 255, 0.3);">
+                            AIレポート生成
+                        </span>
+                    </span>
+                    <span wire:loading wire:target="generate">
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-md font-semibold text-sm transition-colors border"
+                            style="background-color: rgba(255, 255, 255, 0.2); color: #ffffff; border-color: rgba(255, 255, 255, 0.3);">
+                            生成中...
+                        </span>
+                    </span>
                 </button>
 
                 <a href="/reports" class="btn btn-secondary inline-flex items-center gap-2">

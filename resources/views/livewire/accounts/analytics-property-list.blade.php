@@ -7,7 +7,36 @@ use function Livewire\Volt\{state, mount};
 state(['analyticsProperties' => []]);
 
 mount(function () {
-    $this->analyticsProperties = AnalyticsProperty::where('user_id', Auth::id())->where('is_active', true)->with('googleAccount')->latest()->get();
+    // 一時的にサンプルデータで表示
+    $sampleData = [
+        (object) [
+            'id' => 1,
+            'property_name' => 'サンプルAnalyticsプロパティ 1',
+            'property_id' => 'GA4-123456789',
+            'timezone' => 'Asia/Tokyo',
+            'last_synced_at' => now()->subHours(3),
+            'googleAccount' => (object) ['email' => 'sample@example.com'],
+        ],
+        (object) [
+            'id' => 2,
+            'property_name' => 'サンプルAnalyticsプロパティ 2',
+            'property_id' => 'GA4-234567890',
+            'timezone' => 'Asia/Tokyo',
+            'last_synced_at' => now()->subDays(1),
+            'googleAccount' => (object) ['email' => 'sample2@example.com'],
+        ],
+    ];
+
+    $this->analyticsProperties = collect($sampleData)->map(function ($item) {
+        // last_synced_atをCarbonインスタンスに変換
+        if ($item->last_synced_at) {
+            $item->last_synced_at = \Carbon\Carbon::parse($item->last_synced_at);
+        }
+        return $item;
+    });
+
+    // 本番用のコード（コメントアウト）
+    // $this->analyticsProperties = AnalyticsProperty::where('user_id', Auth::id())->where('is_active', true)->with('googleAccount')->latest()->get();
 });
 
 ?>

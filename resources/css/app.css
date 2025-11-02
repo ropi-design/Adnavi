@@ -31,6 +31,57 @@
         --color-accent-content: var(--color-white);
         --color-accent-foreground: var(--color-neutral-800);
     }
+    
+    /* Slack風テーマカラー */
+    .dark.theme-aubergine {
+        --theme-primary: #4a154b;
+        --theme-bg: #2d0b2e;
+    }
+    
+    .dark.theme-clementine {
+        --theme-primary: #c73e1d;
+        --theme-bg: #7a2612;
+    }
+    
+    .dark.theme-banana {
+        --theme-primary: #decb00;
+        --theme-bg: #8a8600;
+    }
+    
+    .dark.theme-jade {
+        --theme-primary: #0c5449;
+        --theme-bg: #062923;
+    }
+    
+    .dark.theme-lagoon {
+        --theme-primary: #1264a3;
+        --theme-bg: #0a3a5a;
+    }
+    
+    .dark.theme-barbra {
+        --theme-primary: #8b1538;
+        --theme-bg: #550d23;
+    }
+    
+    .dark.theme-gray {
+        --theme-primary: #616061;
+        --theme-bg: #3a3a3a;
+    }
+    
+    .dark.theme-mood-indigo {
+        --theme-primary: #1d1c2d;
+        --theme-bg: #121118;
+    }
+    
+    .dark.theme-tritanopia {
+        --theme-primary: #1a1a1a;
+        --theme-bg: #0f0f0f;
+    }
+    
+    .dark.theme-protanopia-deuteranopia {
+        --theme-primary: #2d1b2d;
+        --theme-bg: #1a101a;
+    }
 }
 
 @layer base {

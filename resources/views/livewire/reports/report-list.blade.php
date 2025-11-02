@@ -165,16 +165,28 @@ with(
                     {{-- アクション --}}
                     <div class="flex gap-2 flex-shrink-0">
                         @if ($report->status->value === 'completed')
-                            <a href="/reports/{{ $report->id }}" class="btn btn-primary text-sm">
-                                詳細を見る
+                            <a href="/reports/{{ $report->id }}"
+                                class="inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-colors border-2"
+                                style="background-color: #1e40af; color: #ffffff; border-color: #1e3a8a;">
+                                <span class="inline-flex items-center px-2 py-1 rounded-md font-semibold text-xs mr-2"
+                                    style="background-color: rgba(255, 255, 255, 0.2); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3);">
+                                    詳細を見る
+                                </span>
                             </a>
                         @endif
 
                         @if ($report->status->value === 'failed')
-                            <a href="/reports/{{ $report->id }}" class="btn btn-primary text-sm">
-                                詳細を見る
+                            <a href="/reports/{{ $report->id }}"
+                                class="inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-colors border-2"
+                                style="background-color: #1e40af; color: #ffffff; border-color: #1e3a8a;">
+                                <span class="inline-flex items-center px-2 py-1 rounded-md font-semibold text-xs mr-2"
+                                    style="background-color: rgba(255, 255, 255, 0.2); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3);">
+                                    詳細を見る
+                                </span>
                             </a>
-                            <button class="btn btn-secondary text-sm">
+                            <button
+                                class="inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-colors border-2"
+                                style="background-color: #6b7280; color: #ffffff; border-color: #4b5563;">
                                 再試行
                             </button>
                         @endif

@@ -17,8 +17,11 @@ return [
     'api_key' => env('GEMINI_API_KEY'),
 
     // モデル名
-    // 利用可能なモデル: gemini-1.5-pro-latest, gemini-1.5-flash-latest, gemini-1.5-pro, gemini-1.5-flash
-    'model' => env('GEMINI_MODEL', 'gemini-1.5-flash-latest'),
+    // 利用可能なモデル: gemini-2.5-flash, gemini-2.5-flash-lite, gemini-1.5-pro-latest, gemini-1.5-flash-latest, gemini-1.5-pro, gemini-1.5-flash
+    'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+
+    // リクエストタイムアウト（ミリ秒）
+    'request_timeout_ms' => env('REQUEST_TIMEOUT_MS', 30000),
 
     // Vertex AI設定（オプション）
     'vertex_ai' => [

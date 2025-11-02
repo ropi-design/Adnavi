@@ -35,7 +35,7 @@ class Insight extends Model
      */
     public function analysisReport(): BelongsTo
     {
-        return $this->belongsTo(AnalysisReport::class);
+        return $this->belongsTo(AnalysisReport::class, 'analysis_report_id');
     }
 
     /**
