@@ -304,6 +304,25 @@ use Illuminate\Support\Facades\Auth;
                                             </div>
                                         <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                     </div>
+
+                                    <!--[if BLOCK]><![endif]--><?php if($recommendation->specific_actions && count($recommendation->specific_actions) > 0): ?>
+                                        <div class="mt-4">
+                                            <p class="text-sm font-semibold mb-2" style="color: #000000;">実施手順:</p>
+                                            <ul class="space-y-2">
+                                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $recommendation->specific_actions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $action): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                    <li class="flex items-start gap-2 text-sm"
+                                                        style="color: #000000;">
+                                                        <span
+                                                            class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                                                            <?php echo e($index + 1); ?>
+
+                                                        </span>
+                                                        <span><?php echo e($action); ?></span>
+                                                    </li>
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                            </ul>
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
 
                                 <div class="flex flex-col gap-2">

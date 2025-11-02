@@ -358,6 +358,24 @@ $askQuestion = function (GeminiService $geminiService) {
                                             </div>
                                         @endif
                                     </div>
+
+                                    @if ($recommendation->specific_actions && count($recommendation->specific_actions) > 0)
+                                        <div class="mt-4">
+                                            <p class="text-sm font-semibold mb-2" style="color: #000000;">実施手順:</p>
+                                            <ul class="space-y-2">
+                                                @foreach ($recommendation->specific_actions as $index => $action)
+                                                    <li class="flex items-start gap-2 text-sm"
+                                                        style="color: #000000;">
+                                                        <span
+                                                            class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
+                                                            {{ $index + 1 }}
+                                                        </span>
+                                                        <span>{{ $action }}</span>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="flex flex-col gap-2">
