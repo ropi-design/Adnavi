@@ -3,93 +3,11 @@
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
-use function Livewire\Volt\{state, mount};
-
-state([
-    'colorMode' => 'dark', // light, dark, system
-    'slackTheme' => 'dark', // dark, aubergine, clementine, banana, jade, lagoon, barbra, gray, mood-indigo
-    'accessibilityTheme' => null, // tritanopia, protanopia-deuteranopia
-]);
-
-mount(function () {
-    $user = Auth::user();
-
-    // themeカラムが存在するか確認
-    $theme = 'dark';
-    if (Schema::hasColumn('users', 'theme')) {
-        $theme = $user->theme ?? 'dark';
-    }
-
-    // テーマをカラーモードとSlackテーマに分離
-    // theme形式: "dark" または "dark-aubergine" または "dark-tritanopia" のような形式
-    if (str_contains($theme, '-')) {
-        $parts = explode('-', $theme, 2);
-        $this->colorMode = $parts[0];
-        $themeValue = $parts[1] ?? 'dark';
-
-        // アクセシビリティテーマかどうか判定
-        if (in_array($themeValue, ['tritanopia', 'protanopia-deuteranopia'])) {
-            $this->accessibilityTheme = $themeValue;
-            $this->slackTheme = 'dark'; // デフォルトのテーマ
-        } else {
-            $this->slackTheme = $themeValue;
-            $this->accessibilityTheme = null;
-        }
-    } else {
-        $this->colorMode = in_array($theme, ['light', 'dark', 'system']) ? $theme : 'dark';
-        if (!in_array($theme, ['light', 'dark', 'system'])) {
-            $this->slackTheme = $theme;
-        }
-        $this->accessibilityTheme = null;
-    }
-});
-
-$saveTheme = function () {
-    $user = Auth::user();
-
-    // themeカラムが存在する場合のみ保存
-    if (!Schema::hasColumn('users', 'theme')) {
-        return;
-    }
-
-    // テーマを結合（例: "dark-aubergine"）
-    if ($this->accessibilityTheme) {
-        $theme = $this->colorMode . '-' . $this->accessibilityTheme;
-    } else {
-        if ($this->colorMode === 'system') {
-            $theme = 'system';
-        } else {
-            $theme = $this->colorMode . '-' . $this->slackTheme;
-        }
-    }
-
-    $user->theme = $theme;
-    $user->save();
-};
-
-$updateColorMode = function () {
-    $this->saveTheme();
-    session()->flash('message', 'カラーモードを更新しました');
-    $this->dispatch('theme-updated');
-};
-
-$updateSlackTheme = function () {
-    $this->accessibilityTheme = null; // 単色テーマ選択時はアクセシビリティテーマをリセット
-    $this->saveTheme();
-    session()->flash('message', 'テーマを更新しました');
-    $this->dispatch('theme-updated');
-};
-
-$updateAccessibilityTheme = function () {
-    $this->saveTheme();
-    session()->flash('message', 'アクセシビリティテーマを更新しました');
-    $this->dispatch('theme-updated');
-};
 
 ?>
 
 <div class="h-full flex flex-col animate-fade-in" style="color: #ffffff; background-color: #000;">
-    {{-- ヘッダー --}}
+    
     <div class="flex items-center justify-between border-b px-6 py-4" style="border-color: #2a2d2e;">
         <h1 class="text-2xl font-semibold" style="color: #fff;">環境設定</h1>
         <a href="/dashboard" class="p-2 hover:bg-gray-800 rounded-lg transition-colors">
@@ -100,11 +18,11 @@ $updateAccessibilityTheme = function () {
     </div>
 
     <div class="flex flex-1 overflow-hidden">
-        {{-- 左サイドバーナビゲーション --}}
+        
         <nav class="w-64 border-r p-4 space-y-1 overflow-y-auto"
             style="border-color: #2a2d2e; background-color: #1a1d21;">
             <a href="/settings/profile"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('profile.edit') ? 'bg-white/10' : 'hover:bg-white/5' }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors <?php echo e(request()->routeIs('profile.edit') ? 'bg-white/10' : 'hover:bg-white/5'); ?>"
                 style="color: #fff;">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -113,7 +31,7 @@ $updateAccessibilityTheme = function () {
                 プロフィール
             </a>
             <a href="/settings/password"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('user-password.edit') ? 'bg-white/10' : 'hover:bg-white/5' }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors <?php echo e(request()->routeIs('user-password.edit') ? 'bg-white/10' : 'hover:bg-white/5'); ?>"
                 style="color: #fff;">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -122,7 +40,7 @@ $updateAccessibilityTheme = function () {
                 パスワード
             </a>
             <a href="/settings/appearance"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('appearance.edit') ? 'bg-white/10' : 'hover:bg-white/5' }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors <?php echo e(request()->routeIs('appearance.edit') ? 'bg-white/10' : 'hover:bg-white/5'); ?>"
                 style="color: #fff;">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -132,21 +50,22 @@ $updateAccessibilityTheme = function () {
             </a>
         </nav>
 
-        {{-- 右メインコンテンツ --}}
+        
         <div class="flex-1 overflow-y-auto p-8">
-            {{-- メッセージ --}}
-            @if (session('message'))
+            
+            <!--[if BLOCK]><![endif]--><?php if(session('message')): ?>
                 <div class="p-4 bg-green-100 border-l-4 border-green-500 rounded-lg mb-6">
                     <div class="flex items-center gap-2 text-green-800">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        {{ session('message') }}
+                        <?php echo e(session('message')); ?>
+
                     </div>
                 </div>
-            @endif
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-            {{-- カラーモード --}}
+            
             <div class="card p-8 mb-8">
                 <h2 class="text-xl font-bold mb-4" style="color: #ffffff;">カラーモード</h2>
                 <p class="mb-6 text-sm" style="color: #9ca3af;">
@@ -154,7 +73,7 @@ $updateAccessibilityTheme = function () {
                 </p>
 
                 <div class="grid grid-cols-2 gap-4">
-                    {{-- ライト --}}
+                    
                     <label class="cursor-pointer">
                         <input type="radio" name="colorMode" value="light" wire:model="colorMode"
                             wire:change="updateColorMode" class="sr-only peer" />
@@ -170,7 +89,7 @@ $updateAccessibilityTheme = function () {
                         </div>
                     </label>
 
-                    {{-- ダーク --}}
+                    
                     <label class="cursor-pointer">
                         <input type="radio" name="colorMode" value="dark" wire:model.live="colorMode"
                             wire:change="updateColorMode" class="sr-only peer" />
@@ -188,8 +107,8 @@ $updateAccessibilityTheme = function () {
                 </div>
             </div>
 
-            {{-- Slack テーマ（ダークモード時のみ表示） --}}
-            @if ($colorMode === 'dark')
+            
+            <!--[if BLOCK]><![endif]--><?php if($colorMode === 'dark'): ?>
                 <div class="card p-8 mb-8">
                     <div class="flex gap-4 mb-6 border-b" style="border-color: #374151;">
                         <button class="pb-4 px-2 font-semibold border-b-2 transition-colors"
@@ -202,11 +121,11 @@ $updateAccessibilityTheme = function () {
                         </button>
                     </div>
 
-                    {{-- 単色 --}}
+                    
                     <div class="mb-8">
                         <h3 class="text-lg font-bold mb-4" style="color: #ffffff;">単色</h3>
                         <div class="space-y-3">
-                            @php
+                            <?php
                                 $themes = [
                                     'aubergine' => [
                                         'name' => 'Aubergine',
@@ -241,28 +160,28 @@ $updateAccessibilityTheme = function () {
                                         'gradient' => 'from-indigo-900 via-indigo-800 to-indigo-900',
                                     ],
                                 ];
-                            @endphp
-                            @foreach ($themes as $key => $theme)
+                            ?>
+                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $themes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $theme): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <label class="cursor-pointer block">
-                                    <input type="radio" name="slackTheme" value="{{ $key }}"
+                                    <input type="radio" name="slackTheme" value="<?php echo e($key); ?>"
                                         wire:model="slackTheme" wire:change="updateSlackTheme"
                                         class="sr-only peer" />
                                     <div class="p-4 rounded-lg border-2 transition-all hover:border-blue-400 peer-checked:border-blue-500 peer-checked:ring-2 peer-checked:ring-blue-500"
                                         style="border-color: #374151; background-color: rgba(255, 255, 255, 0.05);">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-12 h-12 rounded-lg flex-shrink-0 bg-gradient-to-br {{ $theme['gradient'] }}">
+                                                class="w-12 h-12 rounded-lg flex-shrink-0 bg-gradient-to-br <?php echo e($theme['gradient']); ?>">
                                             </div>
                                             <span class="font-semibold"
-                                                style="color: #ffffff;">{{ $theme['name'] }}</span>
+                                                style="color: #ffffff;"><?php echo e($theme['name']); ?></span>
                                         </div>
                                     </div>
                                 </label>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
                         </div>
                     </div>
 
-                    {{-- 見やすい配色（視覚補助） --}}
+                    
                     <div class="mb-8">
                         <h3 class="text-lg font-bold mb-4" style="color: #ffffff;">見やすい配色 (視覚補助)</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -306,7 +225,7 @@ $updateAccessibilityTheme = function () {
                         </div>
                     </div>
                 </div>
-            @endif
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
         </div>
     </div>
 </div>
@@ -320,4 +239,4 @@ $updateAccessibilityTheme = function () {
             }, 300);
         });
     });
-</script>
+</script><?php /**PATH /var/www/html/resources/views/livewire/settings/appearance.blade.php ENDPATH**/ ?>

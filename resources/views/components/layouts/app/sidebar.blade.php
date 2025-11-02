@@ -1,6 +1,9 @@
 @php
     $user = auth()->user();
-    $theme = $user?->theme ?? 'dark';
+    $theme = 'dark';
+    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'theme')) {
+        $theme = $user?->theme ?? 'dark';
+    }
 
     // テーマを解析
     $themeParts = explode('-', $theme);

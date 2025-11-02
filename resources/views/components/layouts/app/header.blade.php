@@ -1,6 +1,9 @@
 @php
     $user = auth()->user();
-    $theme = $user?->theme ?? 'dark';
+    $theme = 'dark';
+    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'theme')) {
+        $theme = $user?->theme ?? 'dark';
+    }
 
     // テーマを解析
     $themeParts = explode('-', $theme);
@@ -26,7 +29,7 @@
     @include('partials.head')
 </head>
 
-<body class="min-h-screen bg-black">
+<body class="min-h-screen" style="background-color: var(--theme-bg, #000);">
     <flux:header container class="border-b border-zinc-700 bg-zinc-900">
         <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 

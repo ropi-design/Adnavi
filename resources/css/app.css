@@ -30,6 +30,7 @@
         --color-accent: var(--color-white);
         --color-accent-content: var(--color-white);
         --color-accent-foreground: var(--color-neutral-800);
+        --theme-bg: #000000;
     }
     
     /* Slack風テーマカラー */
@@ -81,6 +82,27 @@
     .dark.theme-protanopia-deuteranopia {
         --theme-primary: #2d1b2d;
         --theme-bg: #1a101a;
+    }
+    
+    /* 楽しい色と新しい色 */
+    .dark.theme-ocean {
+        --theme-primary: #0052cc;
+        --theme-bg: #003366;
+    }
+    
+    .dark.theme-forest {
+        --theme-primary: #00875a;
+        --theme-bg: #004d2e;
+    }
+    
+    .dark.theme-sunset {
+        --theme-primary: #ff5630;
+        --theme-bg: #8b1f00;
+    }
+    
+    .dark.theme-lavender {
+        --theme-primary: #7c3aed;
+        --theme-bg: #3d1d5c;
     }
 }
 

@@ -3,63 +3,17 @@
 use App\Models\Recommendation;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithPagination;
-use function Livewire\Volt\{state, with, uses};
-
-uses([WithPagination::class]);
-
-state([
-    'search' => '',
-    'statusFilter' => 'all',
-    'difficultyFilter' => 'all',
-]);
-
-$updatingSearch = function () {
-    $this->resetPage();
-};
-
-$updatingStatusFilter = function () {
-    $this->resetPage();
-};
-
-$updatingDifficultyFilter = function () {
-    $this->resetPage();
-};
-
-with(
-    fn() => [
-        'recommendations' => Recommendation::query()
-            ->whereHas('insight.analysisReport', fn($q) => $q->where('user_id', Auth::id()))
-            ->with(['insight', 'insight.analysisReport.adAccount'])
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('title', 'like', "%{$this->search}%")->orWhere('description', 'like', "%{$this->search}%");
-                });
-            })
-            ->when($this->statusFilter !== 'all', fn($query) => $query->where('status', $this->statusFilter))
-            ->when($this->difficultyFilter !== 'all', fn($query) => $query->where('implementation_difficulty', $this->difficultyFilter))
-            ->orderByRaw(
-                'CASE status 
-            WHEN "pending" THEN 1 
-            WHEN "in_progress" THEN 2 
-            WHEN "implemented" THEN 3 
-            WHEN "dismissed" THEN 4 
-        END',
-            )
-            ->orderBy('created_at', 'desc')
-            ->paginate(12),
-    ],
-);
 
 ?>
 
 <div class="p-6 lg:p-8 space-y-6 animate-fade-in">
-    {{-- ヘッダー --}}
+    
     <div>
         <h1 class="text-4xl font-bold" style="color: #ffffff;">改善施策</h1>
         <p class="mt-1" style="color: #ffffff;">AIが提案する具体的な改善アクション</p>
     </div>
 
-    {{-- フィルター --}}
+    
     <div class="card p-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="col-span-2">
@@ -94,39 +48,41 @@ with(
         </div>
     </div>
 
-    {{-- 施策一覧 --}}
+    
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        @forelse($recommendations as $recommendation)
+        <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $recommendations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $recommendation): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="p-6 hover:shadow-xl transition-all rounded-xl"
                 style="background-color: #ffffff; border: 2px solid #e5e7eb;">
                 <div class="space-y-4">
-                    {{-- インサイト情報 --}}
-                    @if ($recommendation->insight)
+                    
+                    <!--[if BLOCK]><![endif]--><?php if($recommendation->insight): ?>
                         <div class="pb-3 border-b border-gray-200">
-                            <a href="/insights/{{ $recommendation->insight->id }}"
+                            <a href="/insights/<?php echo e($recommendation->insight->id); ?>"
                                 class="inline-flex items-center gap-2 text-xs text-purple-600 hover:text-purple-800 transition-colors mb-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M6.343 6.343l-.707.707m12.728 0l-.707.707M6.343 17.657l-.707.707M17.657 6.343l-.707-.707m-12.728 0l-.707.707m12.728 12.728l-.707.707M17.657 17.657l-.707-.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span class="font-semibold">{{ $recommendation->insight->title }}</span>
+                                <span class="font-semibold"><?php echo e($recommendation->insight->title); ?></span>
                             </a>
-                            @if ($recommendation->insight->analysisReport)
+                            <!--[if BLOCK]><![endif]--><?php if($recommendation->insight->analysisReport): ?>
                                 <p class="text-xs text-gray-500 mt-1">
                                     レポート:
-                                    {{ $recommendation->insight->analysisReport->adAccount->account_name ?? 'レポート' }}
-                                </p>
-                            @endif
-                        </div>
-                    @endif
+                                    <?php echo e($recommendation->insight->analysisReport->adAccount->account_name ?? 'レポート'); ?>
 
-                    {{-- ヘッダー --}}
+                                </p>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+                    
                     <div class="flex items-start justify-between gap-3">
                         <h3 class="font-bold text-lg flex-1 text-gray-900">
-                            {{ $recommendation->title }}
+                            <?php echo e($recommendation->title); ?>
+
                         </h3>
 
-                        @php
+                        <?php
                             $statusConfig = match ($recommendation->status->value) {
                                 'pending' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'label' => '未着手'],
                                 'in_progress' => [
@@ -141,19 +97,21 @@ with(
                                 ],
                                 'dismissed' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'label' => '却下'],
                             };
-                        @endphp
+                        ?>
                         <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }}">
-                            {{ $statusConfig['label'] }}
+                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold <?php echo e($statusConfig['bg']); ?> <?php echo e($statusConfig['text']); ?>">
+                            <?php echo e($statusConfig['label']); ?>
+
                         </span>
                     </div>
 
-                    {{-- 説明 --}}
+                    
                     <p class="text-sm text-gray-600 line-clamp-3">
-                        {{ $recommendation->description }}
+                        <?php echo e($recommendation->description); ?>
+
                     </p>
 
-                    {{-- メタ情報 --}}
+                    
                     <div class="flex flex-wrap items-center gap-4 text-sm">
                         <div class="flex items-center gap-2">
                             <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor"
@@ -163,15 +121,16 @@ with(
                             </svg>
                             <span class="text-gray-500">難易度:</span>
                             <span class="font-semibold text-gray-900">
-                                {{ match ($recommendation->implementation_difficulty) {
+                                <?php echo e(match ($recommendation->implementation_difficulty) {
                                     'easy' => '簡単',
                                     'medium' => '普通',
                                     'hard' => '難しい',
-                                } }}
+                                }); ?>
+
                             </span>
                         </div>
 
-                        @if ($recommendation->estimated_impact)
+                        <!--[if BLOCK]><![endif]--><?php if($recommendation->estimated_impact): ?>
                             <div class="flex items-start gap-2 w-full">
                                 <svg class="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" fill="none"
                                     stroke="currentColor" viewBox="0 0 24 24">
@@ -180,31 +139,32 @@ with(
                                 </svg>
                                 <div class="flex-1 min-w-0">
                                     <span class="text-gray-500 text-sm">効果:</span>
-                                    @php
+                                    <?php
                                         // estimated_impactを | で分割して、最初の1行だけ表示
                                         $impactLines = explode(' | ', $recommendation->estimated_impact);
                                         $firstLine = $impactLines[0] ?? $recommendation->estimated_impact;
-                                    @endphp
-                                    <p class="font-semibold text-gray-900 text-sm mt-1 line-clamp-2">{{ $firstLine }}
+                                    ?>
+                                    <p class="font-semibold text-gray-900 text-sm mt-1 line-clamp-2"><?php echo e($firstLine); ?>
+
                                     </p>
-                                    @if (count($impactLines) > 1)
-                                        <p class="text-xs text-gray-500 mt-1">+{{ count($impactLines) - 1 }}件の詳細あり</p>
-                                    @endif
+                                    <!--[if BLOCK]><![endif]--><?php if(count($impactLines) > 1): ?>
+                                        <p class="text-xs text-gray-500 mt-1">+<?php echo e(count($impactLines) - 1); ?>件の詳細あり</p>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                 </div>
                             </div>
-                        @endif
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
 
-                    {{-- アクション --}}
+                    
                     <div class="flex gap-2 pt-4 border-t border-gray-200">
-                        <a href="/recommendations/{{ $recommendation->id }}"
+                        <a href="/recommendations/<?php echo e($recommendation->id); ?>"
                             class="btn btn-primary text-sm flex-1 justify-center" style="color: #000000 !important;">
                             詳細を見る
                         </a>
                     </div>
                 </div>
             </div>
-        @empty
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <div class="col-span-full">
                 <div class="card">
                     <div class="text-center py-16 text-gray-500">
@@ -227,13 +187,14 @@ with(
                     </div>
                 </div>
             </div>
-        @endforelse
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
     </div>
 
-    {{-- ページネーション --}}
-    @if ($recommendations->hasPages())
+    
+    <!--[if BLOCK]><![endif]--><?php if($recommendations->hasPages()): ?>
         <div class="card p-4">
-            {{ $recommendations->links() }}
+            <?php echo e($recommendations->links()); ?>
+
         </div>
-    @endif
-</div>
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+</div><?php /**PATH /var/www/html/resources/views/livewire/recommendations/recommendation-list.blade.php ENDPATH**/ ?>

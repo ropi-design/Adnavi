@@ -3,70 +3,11 @@
 use App\Models\AnalysisReport;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithPagination;
-use function Livewire\Volt\{state, with, uses};
-
-uses([WithPagination::class]);
-
-state([
-    'search' => '',
-    'statusFilter' => 'all',
-    'sortBy' => 'created_at',
-    'sortDirection' => 'desc',
-    'deleteConfirmId' => null,
-]);
-
-$updatingSearch = function () {
-    $this->resetPage();
-};
-
-$updatingStatusFilter = function () {
-    $this->resetPage();
-};
-
-$sortByColumn = function ($column) {
-    if ($this->sortBy === $column) {
-        $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-        $this->sortBy = $column;
-        $this->sortDirection = 'asc';
-    }
-};
-
-$confirmDelete = function ($reportId) {
-    $this->deleteConfirmId = $reportId;
-};
-
-$cancelDelete = function () {
-    $this->deleteConfirmId = null;
-};
-
-$deleteReport = function ($reportId) {
-    AnalysisReport::where('id', $reportId)->where('user_id', Auth::id())->delete();
-
-    $this->deleteConfirmId = null;
-    session()->flash('message', 'レポートを削除しました。');
-};
-
-with(
-    fn() => [
-        'reports' => AnalysisReport::query()
-            ->where('user_id', Auth::id())
-            ->with(['adAccount'])
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->whereHas('adAccount', fn($q) => $q->where('account_name', 'like', "%{$this->search}%"))->orWhere('report_type', 'like', "%{$this->search}%");
-                });
-            })
-            ->when($this->statusFilter !== 'all', fn($query) => $query->where('status', $this->statusFilter))
-            ->orderBy($this->sortBy, $this->sortDirection)
-            ->paginate(10),
-    ],
-);
 
 ?>
 
 <div class="p-6 lg:p-8 space-y-6 animate-fade-in">
-    {{-- ヘッダー --}}
+    
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
             <h1 class="text-4xl font-bold" style="color: #ffffff;">分析レポート</h1>
@@ -83,7 +24,7 @@ with(
         </a>
     </div>
 
-    {{-- フィルター --}}
+    
     <div class="card p-6">
         <div class="flex flex-col md:flex-row gap-4">
             <div class="flex-1">
@@ -110,28 +51,29 @@ with(
         </div>
     </div>
 
-    {{-- レポート一覧 --}}
+    
     <div class="space-y-4">
-        @forelse($reports as $report)
+        <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $reports; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $report): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="card p-6 hover:shadow-xl transition-all">
                 <div class="flex flex-col lg:flex-row lg:items-start gap-4">
-                    {{-- ステータスバッジ --}}
+                    
                     <div class="flex-shrink-0">
-                        @php
+                        <?php
                             $statusConfig = match ($report->status->value) {
                                 'completed' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'label' => '完了'],
                                 'processing' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'label' => '処理中'],
                                 'failed' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'label' => '失敗'],
                                 default => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'label' => '待機中'],
                             };
-                        @endphp
+                        ?>
                         <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold {{ $statusConfig['bg'] }} {{ $statusConfig['text'] }}">
-                            {{ $statusConfig['label'] }}
+                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold <?php echo e($statusConfig['bg']); ?> <?php echo e($statusConfig['text']); ?>">
+                            <?php echo e($statusConfig['label']); ?>
+
                         </span>
                     </div>
 
-                    {{-- レポート情報 --}}
+                    
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start gap-3 mb-3">
                             <div class="p-2 bg-blue-100 rounded-lg">
@@ -143,7 +85,8 @@ with(
                             </div>
                             <div class="flex-1">
                                 <h3 class="font-bold text-xl" style="color: #ffffff;">
-                                    {{ $report->adAccount->account_name }}
+                                    <?php echo e($report->adAccount->account_name); ?>
+
                                 </h3>
 
                                 <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600 mt-2">
@@ -152,12 +95,13 @@ with(
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                         </svg>
-                                        {{ match ($report->report_type->value) {
+                                        <?php echo e(match ($report->report_type->value) {
                                             'daily' => '日次レポート',
                                             'weekly' => '週次レポート',
                                             'monthly' => '月次レポート',
                                             'custom' => 'カスタムレポート',
-                                        } }}
+                                        }); ?>
+
                                     </span>
                                     <span class="text-gray-400">|</span>
                                     <span class="inline-flex items-center gap-1">
@@ -165,23 +109,26 @@ with(
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
-                                        {{ \Carbon\Carbon::parse($report->start_date)->isoFormat('YYYY/MM/DD') }}
+                                        <?php echo e(\Carbon\Carbon::parse($report->start_date)->isoFormat('YYYY/MM/DD')); ?>
+
                                         〜
-                                        {{ \Carbon\Carbon::parse($report->end_date)->isoFormat('YYYY/MM/DD') }}
+                                        <?php echo e(\Carbon\Carbon::parse($report->end_date)->isoFormat('YYYY/MM/DD')); ?>
+
                                     </span>
                                 </div>
 
                                 <div class="text-xs text-gray-500 mt-2">
-                                    作成: {{ $report->created_at->diffForHumans() }}
+                                    作成: <?php echo e($report->created_at->diffForHumans()); ?>
+
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {{-- アクション --}}
+                    
                     <div class="flex gap-2 flex-shrink-0">
-                        @if ($report->status->value === 'completed')
-                            <a href="/reports/{{ $report->id }}"
+                        <!--[if BLOCK]><![endif]--><?php if($report->status->value === 'completed'): ?>
+                            <a href="/reports/<?php echo e($report->id); ?>"
                                 class="inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-colors border-2"
                                 style="background-color: #1e40af; color: #ffffff; border-color: #1e3a8a;">
                                 <span class="inline-flex items-center px-2 py-1 rounded-md font-semibold text-xs mr-2"
@@ -189,10 +136,10 @@ with(
                                     詳細を見る
                                 </span>
                             </a>
-                        @endif
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-                        @if ($report->status->value === 'failed')
-                            <a href="/reports/{{ $report->id }}"
+                        <!--[if BLOCK]><![endif]--><?php if($report->status->value === 'failed'): ?>
+                            <a href="/reports/<?php echo e($report->id); ?>"
                                 class="inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm transition-colors border-2"
                                 style="background-color: #1e40af; color: #ffffff; border-color: #1e3a8a;">
                                 <span class="inline-flex items-center px-2 py-1 rounded-md font-semibold text-xs mr-2"
@@ -205,11 +152,11 @@ with(
                                 style="background-color: #6b7280; color: #ffffff; border-color: #4b5563;">
                                 再試行
                             </button>
-                        @endif
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
-                        @if ($deleteConfirmId === $report->id)
+                        <!--[if BLOCK]><![endif]--><?php if($deleteConfirmId === $report->id): ?>
                             <div class="flex gap-2 items-center">
-                                <button wire:click="deleteReport({{ $report->id }})"
+                                <button wire:click="deleteReport(<?php echo e($report->id); ?>)"
                                     class="inline-flex items-center px-3 py-2 rounded-lg font-semibold text-sm transition-colors border-2 hover:opacity-80"
                                     style="background-color: #dc2626; color: #ffffff; border-color: #b91c1c;">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,8 +171,8 @@ with(
                                     キャンセル
                                 </button>
                             </div>
-                        @else
-                            <button wire:click="confirmDelete({{ $report->id }})"
+                        <?php else: ?>
+                            <button wire:click="confirmDelete(<?php echo e($report->id); ?>)"
                                 class="inline-flex items-center px-3 py-2 rounded-lg font-semibold text-sm transition-colors border-2 hover:opacity-80"
                                 style="background-color: #dc2626; color: #ffffff; border-color: #b91c1c;">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -233,11 +180,11 @@ with(
                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                             </button>
-                        @endif
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
                 </div>
             </div>
-        @empty
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <div class="card">
                 <div class="text-center py-16 text-gray-500">
                     <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
@@ -258,13 +205,14 @@ with(
                     </a>
                 </div>
             </div>
-        @endforelse
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
     </div>
 
-    {{-- ページネーション --}}
-    @if ($reports->hasPages())
+    
+    <!--[if BLOCK]><![endif]--><?php if($reports->hasPages()): ?>
         <div class="card p-4">
-            {{ $reports->links() }}
+            <?php echo e($reports->links()); ?>
+
         </div>
-    @endif
-</div>
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+</div><?php /**PATH /var/www/html/resources/views/livewire/reports/report-list.blade.php ENDPATH**/ ?>
