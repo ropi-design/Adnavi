@@ -529,88 +529,89 @@ use Illuminate\Support\Facades\Auth;
             <div class="bg-zinc-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-auto border border-zinc-700"
                 x-data="{
                     init() {
-                        // Chart.jsのグラフを作成
-                        const ctx = this.$refs.chartCanvas;
-                        const data = <?php echo \Illuminate\Support\Js::from($dailyData['values'])->toHtml() ?>;
-                        const dates = <?php echo \Illuminate\Support\Js::from($dailyData['dates'])->toHtml() ?>;
-                        const metricName = <?php echo \Illuminate\Support\Js::from($dailyData['name'])->toHtml() ?>;
-                        
-                        this.chart = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: dates,
-                                datasets: [{
-                                    label: metricName,
-                                    data: data,
-                                    borderColor: '#4285F4',
-                                    backgroundColor: 'rgba(66, 133, 244, 0.1)',
-                                    tension: 0.4,
-                                    fill: true,
-                                    pointRadius: 3,
-                                    pointHoverRadius: 6,
-                                    pointBackgroundColor: '#4285F4',
-                                    pointBorderColor: '#fff',
-                                    pointBorderWidth: 2,
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: true,
-                                        labels: {
-                                            color: '#9CA3AF'
-                                        }
-                                    },
-                                    tooltip: {
-                                        mode: 'index',
-                                        intersect: false,
-                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                        titleColor: '#fff',
-                                        bodyColor: '#fff',
+                            // Chart.jsのグラフを作成
+                            const ctx = this.$refs.chartCanvas;
+                            const data = <?php echo \Illuminate\Support\Js::from($dailyData['values'])->toHtml() ?>;
+                            const dates = <?php echo \Illuminate\Support\Js::from($dailyData['dates'])->toHtml() ?>;
+                            const metricName = <?php echo \Illuminate\Support\Js::from($dailyData['name'])->toHtml() ?>;
+                
+                            this.chart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: dates,
+                                    datasets: [{
+                                        label: metricName,
+                                        data: data,
                                         borderColor: '#4285F4',
-                                        borderWidth: 1
-                                    }
+                                        backgroundColor: 'rgba(66, 133, 244, 0.1)',
+                                        tension: 0.4,
+                                        fill: true,
+                                        pointRadius: 3,
+                                        pointHoverRadius: 6,
+                                        pointBackgroundColor: '#4285F4',
+                                        pointBorderColor: '#fff',
+                                        pointBorderWidth: 2,
+                                    }]
                                 },
-                                scales: {
-                                    x: {
-                                        ticks: {
-                                            color: '#9CA3AF',
-                                            maxTicksLimit: 10
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            labels: {
+                                                color: '#9CA3AF'
+                                            }
                                         },
-                                        grid: {
-                                            color: 'rgba(161, 161, 170, 0.1)'
+                                        tooltip: {
+                                            mode: 'index',
+                                            intersect: false,
+                                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                            titleColor: '#fff',
+                                            bodyColor: '#fff',
+                                            borderColor: '#4285F4',
+                                            borderWidth: 1
                                         }
                                     },
-                                    y: {
-                                        ticks: {
-                                            color: '#9CA3AF'
+                                    scales: {
+                                        x: {
+                                            ticks: {
+                                                color: '#9CA3AF',
+                                                maxTicksLimit: 10
+                                            },
+                                            grid: {
+                                                color: 'rgba(161, 161, 170, 0.1)'
+                                            }
                                         },
-                                        grid: {
-                                            color: 'rgba(161, 161, 170, 0.1)'
-                                        },
-                                        beginAtZero: true
+                                        y: {
+                                            ticks: {
+                                                color: '#9CA3AF'
+                                            },
+                                            grid: {
+                                                color: 'rgba(161, 161, 170, 0.1)'
+                                            },
+                                            beginAtZero: true
+                                        }
+                                    },
+                                    interaction: {
+                                        mode: 'index',
+                                        intersect: false
                                     }
-                                },
-                                interaction: {
-                                    mode: 'index',
-                                    intersect: false
                                 }
+                            });
+                        },
+                        destroy() {
+                            if (this.chart) {
+                                this.chart.destroy();
                             }
-                        });
-                    },
-                    destroy() {
-                        if (this.chart) {
-                            this.chart.destroy();
                         }
-                    }
-                }"
-                wire:click.stop>
+                }" wire:click.stop>
                 <div class="p-6 border-b border-zinc-700 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: #4285F4;">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                            style="background-color: #4285F4;">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
@@ -619,7 +620,8 @@ use Illuminate\Support\Facades\Auth;
                             <h2 class="text-2xl font-bold text-white"><?php echo e($dailyData['name']); ?> - 日別推移</h2>
                             <!--[if BLOCK]><![endif]--><?php if($dateRange): ?>
                                 <p class="text-sm text-gray-400">
-                                    <?php echo e($dateRange['start']->format('Y年m月d日')); ?> ～ <?php echo e($dateRange['end']->format('Y年m月d日')); ?>
+                                    <?php echo e($dateRange['start']->format('Y年m月d日')); ?> ～
+                                    <?php echo e($dateRange['end']->format('Y年m月d日')); ?>
 
                                 </p>
                             <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
@@ -628,7 +630,8 @@ use Illuminate\Support\Facades\Auth;
                     <button wire:click="closeGraphModal" type="button"
                         class="p-2 text-gray-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>

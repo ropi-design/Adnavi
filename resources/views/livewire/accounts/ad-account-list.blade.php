@@ -7,47 +7,8 @@ use function Livewire\Volt\{state, mount};
 state(['adAccounts' => []]);
 
 mount(function () {
-    // 一時的にサンプルデータで表示
-    $sampleData = [
-        (object) [
-            'id' => 1,
-            'account_name' => 'サンプル広告アカウント 1',
-            'customer_id' => '123-456-7890',
-            'currency' => 'JPY',
-            'timezone' => 'Asia/Tokyo',
-            'last_synced_at' => now()->subHours(2),
-            'googleAccount' => (object) ['email' => 'sample@example.com'],
-        ],
-        (object) [
-            'id' => 2,
-            'account_name' => 'サンプル広告アカウント 2',
-            'customer_id' => '234-567-8901',
-            'currency' => 'JPY',
-            'timezone' => 'Asia/Tokyo',
-            'last_synced_at' => now()->subDays(1),
-            'googleAccount' => (object) ['email' => 'sample2@example.com'],
-        ],
-        (object) [
-            'id' => 3,
-            'account_name' => 'サンプル広告アカウント 3',
-            'customer_id' => '345-678-9012',
-            'currency' => 'JPY',
-            'timezone' => 'Asia/Tokyo',
-            'last_synced_at' => null,
-            'googleAccount' => (object) ['email' => 'sample3@example.com'],
-        ],
-    ];
-
-    $this->adAccounts = collect($sampleData)->map(function ($item) {
-        // last_synced_atをCarbonインスタンスに変換
-        if ($item->last_synced_at) {
-            $item->last_synced_at = \Carbon\Carbon::parse($item->last_synced_at);
-        }
-        return $item;
-    });
-
-    // 本番用のコード（コメントアウト）
-    // $this->adAccounts = AdAccount::where('user_id', Auth::id())->where('is_active', true)->with('googleAccount')->latest()->get();
+    // 実際のデータベースから取得（サンプルアカウントを除外）
+    $this->adAccounts = AdAccount::where('user_id', Auth::id())->where('is_active', true)->where('account_name', 'not like', '%サンプル%')->where('customer_id', 'not like', 'sample-%')->where('account_name', '!=', 'サンプル広告アカウント')->with('googleAccount')->latest()->get();
 });
 
 $checkSync = function ($accountId) {

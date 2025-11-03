@@ -80,6 +80,20 @@ new class extends Component implements Livewire\Volt\Contracts\FunctionalCompone
         return (new Actions\CallMethod('refresh'))->execute(...$arguments);
     }
 
+    public function getMetricName($metricKey)
+    {
+        $arguments = [static::$__context, $this, func_get_args()];
+
+        return (new Actions\CallMethod('getMetricName'))->execute(...$arguments);
+    }
+
+    public function getMetricSelectRaw($metricKey)
+    {
+        $arguments = [static::$__context, $this, func_get_args()];
+
+        return (new Actions\CallMethod('getMetricSelectRaw'))->execute(...$arguments);
+    }
+
     public function generateDailyData($metricKey)
     {
         $arguments = [static::$__context, $this, func_get_args()];

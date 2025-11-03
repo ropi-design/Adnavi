@@ -66,64 +66,154 @@ $calculateDateRange = function () {
 $loadMetrics = function () {
     $this->loading = true;
 
-    // 期間に応じたダミーデータを生成
-    // TODO: 実際のデータ取得処理に置き換え
-    $period = $this->selectedPeriod;
-
     // 日付範囲を計算して保存
     $this->dateRange = $this->calculateDateRange();
+    $dateRange = $this->dateRange;
+    $startDate = $dateRange['start'];
+    $endDate = $dateRange['end'];
 
-    // 期間別のデータ倍率
-    $multiplier = match ($period) {
-        'today' => 1,
-        'week' => 7,
-        'month' => 30,
-        'custom' => $this->calculateCustomDays(),
-        default => 1,
+    // ユーザーの広告アカウントを取得
+    $user = Auth::user();
+    $adAccounts = \App\Models\AdAccount::where('user_id', $user->id)->where('is_active', true)->pluck('id');
+
+    if ($adAccounts->isEmpty()) {
+        // データがない場合は0を返す
+        $this->metrics = [
+            'impressions' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'clicks' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'cost' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'conversions' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'ctr' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'cpa' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'cpc' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'cvr' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+        ];
+        $this->loading = false;
+        return;
+    }
+
+    // キャンペーンIDを取得
+    $campaignIds = \App\Models\Campaign::whereIn('ad_account_id', $adAccounts)->pluck('id');
+
+    if ($campaignIds->isEmpty()) {
+        $this->metrics = [
+            'impressions' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'clicks' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'cost' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'conversions' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'ctr' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'cpa' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'cpc' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+            'cvr' => ['value' => 0, 'change' => 0, 'trend' => 'neutral'],
+        ];
+        $this->loading = false;
+        return;
+    }
+
+    // 現在期間のデータを取得
+    $currentMetrics = \Illuminate\Support\Facades\DB::table('ad_metrics_daily')
+        ->whereIn('campaign_id', $campaignIds)
+        ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+        ->select(\Illuminate\Support\Facades\DB::raw('SUM(impressions) as total_impressions'), \Illuminate\Support\Facades\DB::raw('SUM(clicks) as total_clicks'), \Illuminate\Support\Facades\DB::raw('SUM(cost) as total_cost'), \Illuminate\Support\Facades\DB::raw('SUM(conversions) as total_conversions'), \Illuminate\Support\Facades\DB::raw('AVG(ctr) as avg_ctr'), \Illuminate\Support\Facades\DB::raw('AVG(cpc) as avg_cpc'), \Illuminate\Support\Facades\DB::raw('AVG(cpa) as avg_cpa'))
+        ->first();
+
+    $currentImpressions = (int) ($currentMetrics->total_impressions ?? 0);
+    $currentClicks = (int) ($currentMetrics->total_clicks ?? 0);
+    $currentCost = (float) ($currentMetrics->total_cost ?? 0);
+    $currentConversions = (float) ($currentMetrics->total_conversions ?? 0);
+    $currentCtr = (float) ($currentMetrics->avg_ctr ?? 0);
+    $currentCpc = (float) ($currentMetrics->avg_cpc ?? 0);
+    $currentCpa = (float) ($currentMetrics->avg_cpa ?? 0);
+    $currentCvr = $currentClicks > 0 ? ($currentConversions / $currentClicks) * 100 : 0;
+
+    // 前期間のデータを取得（比較用）
+    $periodDays = $startDate->diffInDays($endDate) + 1;
+    $previousStartDate = $startDate->copy()->subDays($periodDays);
+    $previousEndDate = $startDate->copy()->subDay();
+
+    $previousMetrics = \Illuminate\Support\Facades\DB::table('ad_metrics_daily')
+        ->whereIn('campaign_id', $campaignIds)
+        ->whereBetween('date', [$previousStartDate->format('Y-m-d'), $previousEndDate->format('Y-m-d')])
+        ->select(\Illuminate\Support\Facades\DB::raw('SUM(impressions) as total_impressions'), \Illuminate\Support\Facades\DB::raw('SUM(clicks) as total_clicks'), \Illuminate\Support\Facades\DB::raw('SUM(cost) as total_cost'), \Illuminate\Support\Facades\DB::raw('SUM(conversions) as total_conversions'), \Illuminate\Support\Facades\DB::raw('AVG(ctr) as avg_ctr'), \Illuminate\Support\Facades\DB::raw('AVG(cpc) as avg_cpc'), \Illuminate\Support\Facades\DB::raw('AVG(cpa) as avg_cpa'))
+        ->first();
+
+    $previousImpressions = (int) ($previousMetrics->total_impressions ?? 0);
+    $previousClicks = (int) ($previousMetrics->total_clicks ?? 0);
+    $previousCost = (float) ($previousMetrics->total_cost ?? 0);
+    $previousConversions = (float) ($previousMetrics->total_conversions ?? 0);
+    $previousCtr = (float) ($previousMetrics->avg_ctr ?? 0);
+    $previousCpc = (float) ($previousMetrics->avg_cpc ?? 0);
+    $previousCpa = (float) ($previousMetrics->avg_cpa ?? 0);
+    $previousCvr = $previousClicks > 0 ? ($previousConversions / $previousClicks) * 100 : 0;
+
+    // 変化率を計算
+    $calculateChange = function ($current, $previous) {
+        if ($previous == 0) {
+            return $current > 0 ? 100 : 0;
+        }
+        return (($current - $previous) / $previous) * 100;
     };
 
-    // ベースデータに期間倍率を適用
-    // 同じ期間では同じ値を返すように固定値を使用
+    $impressionsChange = $calculateChange($currentImpressions, $previousImpressions);
+    $clicksChange = $calculateChange($currentClicks, $previousClicks);
+    $costChange = $calculateChange($currentCost, $previousCost);
+    $conversionsChange = $calculateChange($currentConversions, $previousConversions);
+    $ctrChange = $previousCtr > 0 ? (($currentCtr - $previousCtr) / $previousCtr) * 100 : 0;
+    $cpcChange = $previousCpc > 0 ? (($currentCpc - $previousCpc) / $previousCpc) * 100 : 0;
+    $cpaChange = $previousCpa > 0 ? (($currentCpa - $previousCpa) / $previousCpa) * 100 : 0;
+    $cvrChange = $previousCvr > 0 ? (($currentCvr - $previousCvr) / $previousCvr) * 100 : 0;
+
+    // トレンド判定
+    $getTrend = function ($change) {
+        if ($change > 0) {
+            return 'up';
+        }
+        if ($change < 0) {
+            return 'down';
+        }
+        return 'neutral';
+    };
+
     $this->metrics = [
         'impressions' => [
-            'value' => (int) (125000 * $multiplier),
-            'change' => 12.5,
-            'trend' => 'up',
+            'value' => $currentImpressions,
+            'change' => round($impressionsChange, 1),
+            'trend' => $getTrend($impressionsChange),
         ],
         'clicks' => [
-            'value' => (int) (3500 * $multiplier),
-            'change' => 8.3,
-            'trend' => 'up',
+            'value' => $currentClicks,
+            'change' => round($clicksChange, 1),
+            'trend' => $getTrend($clicksChange),
         ],
         'cost' => [
-            'value' => (int) (85000 * $multiplier),
-            'change' => -5.2,
-            'trend' => 'down',
+            'value' => (int) $currentCost,
+            'change' => round($costChange, 1),
+            'trend' => $getTrend($costChange),
         ],
         'conversions' => [
-            'value' => (int) (145 * $multiplier),
-            'change' => 15.8,
-            'trend' => 'up',
+            'value' => (int) $currentConversions,
+            'change' => round($conversionsChange, 1),
+            'trend' => $getTrend($conversionsChange),
         ],
         'ctr' => [
-            'value' => 2.8,
-            'change' => 0.3,
-            'trend' => 'up',
+            'value' => round($currentCtr, 2),
+            'change' => round($ctrChange, 1),
+            'trend' => $getTrend($ctrChange),
         ],
         'cpa' => [
-            'value' => 586,
-            'change' => -12.1,
-            'trend' => 'down',
+            'value' => (int) $currentCpa,
+            'change' => round($cpaChange, 1),
+            'trend' => $getTrend($cpaChange),
         ],
         'cpc' => [
-            'value' => 24.29,
-            'change' => -6.2,
-            'trend' => 'down',
+            'value' => round($currentCpc, 2),
+            'change' => round($cpcChange, 1),
+            'trend' => $getTrend($cpcChange),
         ],
         'cvr' => [
-            'value' => 4.14,
-            'change' => 0.5,
-            'trend' => 'up',
+            'value' => round($currentCvr, 2),
+            'change' => round($cvrChange, 1),
+            'trend' => $getTrend($cvrChange),
         ],
     ];
 
@@ -159,17 +249,8 @@ $refresh = function () {
     ]);
 };
 
-// 日別データを生成
-$generateDailyData = function ($metricKey) {
-    $dateRange = $this->calculateDateRange();
-    $start = $dateRange['start'];
-    $end = $dateRange['end'];
-    
-    $days = $start->diffInDays($end) + 1;
-    $data = [];
-    $dates = [];
-    
-    // メトリクス名のマッピング
+// メトリクス名を取得
+$getMetricName = function ($metricKey) {
     $metricNames = [
         'impressions' => 'インプレッション',
         'clicks' => 'クリック数',
@@ -180,42 +261,88 @@ $generateDailyData = function ($metricKey) {
         'cpa' => '獲得単価',
         'cvr' => 'コンバージョン率',
     ];
-    
-    // ベース値の設定
-    $baseValues = [
-        'impressions' => 125000,
-        'clicks' => 3500,
-        'cost' => 85000,
-        'conversions' => 145,
-        'ctr' => 2.8,
-        'cpc' => 24.29,
-        'cpa' => 586,
-        'cvr' => 4.14,
-    ];
-    
-    $baseValue = $baseValues[$metricKey] ?? 100;
-    
-    // 日別データを生成（少しばらつきを持たせる）
-    for ($i = 0; $i < $days; $i++) {
-        $date = $start->copy()->addDays($i);
-        $dates[] = $date->format('Y-m-d');
-        
-        // 日別の値を生成（±20%のばらつき）
-        $variation = (rand(8000, 12000) / 10000); // 0.8 から 1.2 の間
-        $value = $baseValue * $variation;
-        
-        // 合計値系のメトリクスは1日あたりの値に変換、率系のメトリクスはそのまま
-        if (in_array($metricKey, ['impressions', 'clicks', 'conversions', 'cost'])) {
-            $value = $value / $days; // 合計値を日数で割って1日あたりの値に
-        }
-        
-        $data[] = round($value, 2);
+    return $metricNames[$metricKey] ?? $metricKey;
+};
+
+// メトリクスのSELECT文を生成
+$getMetricSelectRaw = function ($metricKey) {
+    $selectRaw = match ($metricKey) {
+        'impressions' => 'SUM(impressions) as value',
+        'clicks' => 'SUM(clicks) as value',
+        'cost' => 'SUM(cost) as value',
+        'conversions' => 'SUM(conversions) as value',
+        'ctr' => 'AVG(ctr) as value',
+        'cpc' => 'AVG(cpc) as value',
+        'cpa' => 'AVG(cpa) as value',
+        'cvr' => 'CASE WHEN SUM(clicks) > 0 THEN (SUM(conversions) / SUM(clicks) * 100) ELSE 0 END as value',
+        default => '0 as value',
+    };
+    return $selectRaw;
+};
+
+// 日別データを生成
+$generateDailyData = function ($metricKey) use ($getMetricName, $getMetricSelectRaw) {
+    $dateRange = $this->calculateDateRange();
+    $start = $dateRange['start'];
+    $end = $dateRange['end'];
+
+    // ユーザーの広告アカウントを取得
+    $user = Auth::user();
+    $adAccounts = \App\Models\AdAccount::where('user_id', $user->id)->where('is_active', true)->pluck('id');
+
+    if ($adAccounts->isEmpty()) {
+        return [
+            'dates' => [],
+            'values' => [],
+            'name' => $getMetricName($metricKey),
+            'key' => $metricKey,
+        ];
     }
-    
+
+    // キャンペーンIDを取得
+    $campaignIds = \App\Models\Campaign::whereIn('ad_account_id', $adAccounts)->pluck('id');
+
+    if ($campaignIds->isEmpty()) {
+        return [
+            'dates' => [],
+            'values' => [],
+            'name' => $getMetricName($metricKey),
+            'key' => $metricKey,
+        ];
+    }
+
+    // 日別データを取得
+    $dailyData = \Illuminate\Support\Facades\DB::table('ad_metrics_daily')
+        ->whereIn('campaign_id', $campaignIds)
+        ->whereBetween('date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+        ->select('date')
+        ->selectRaw($getMetricSelectRaw($metricKey))
+        ->groupBy('date')
+        ->orderBy('date')
+        ->get();
+
+    $dates = [];
+    $data = [];
+
+    foreach ($dailyData as $row) {
+        $dates[] = $row->date;
+        $data[] = (float) ($row->value ?? 0);
+    }
+
+    // データがない場合は空の配列を返す
+    if (empty($dates)) {
+        $days = $start->diffInDays($end) + 1;
+        for ($i = 0; $i < $days; $i++) {
+            $date = $start->copy()->addDays($i);
+            $dates[] = $date->format('Y-m-d');
+            $data[] = 0;
+        }
+    }
+
     return [
         'dates' => $dates,
         'values' => $data,
-        'name' => $metricNames[$metricKey] ?? $metricKey,
+        'name' => $getMetricName($metricKey),
         'key' => $metricKey,
     ];
 };
@@ -763,88 +890,89 @@ $closeGraphModal = function () {
             <div class="bg-zinc-900 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-auto border border-zinc-700"
                 x-data="{
                     init() {
-                        // Chart.jsのグラフを作成
-                        const ctx = this.$refs.chartCanvas;
-                        const data = @js($dailyData['values']);
-                        const dates = @js($dailyData['dates']);
-                        const metricName = @js($dailyData['name']);
-                        
-                        this.chart = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: dates,
-                                datasets: [{
-                                    label: metricName,
-                                    data: data,
-                                    borderColor: '#4285F4',
-                                    backgroundColor: 'rgba(66, 133, 244, 0.1)',
-                                    tension: 0.4,
-                                    fill: true,
-                                    pointRadius: 3,
-                                    pointHoverRadius: 6,
-                                    pointBackgroundColor: '#4285F4',
-                                    pointBorderColor: '#fff',
-                                    pointBorderWidth: 2,
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: true,
-                                        labels: {
-                                            color: '#9CA3AF'
-                                        }
-                                    },
-                                    tooltip: {
-                                        mode: 'index',
-                                        intersect: false,
-                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                        titleColor: '#fff',
-                                        bodyColor: '#fff',
+                            // Chart.jsのグラフを作成
+                            const ctx = this.$refs.chartCanvas;
+                            const data = @js($dailyData['values']);
+                            const dates = @js($dailyData['dates']);
+                            const metricName = @js($dailyData['name']);
+                
+                            this.chart = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: dates,
+                                    datasets: [{
+                                        label: metricName,
+                                        data: data,
                                         borderColor: '#4285F4',
-                                        borderWidth: 1
-                                    }
+                                        backgroundColor: 'rgba(66, 133, 244, 0.1)',
+                                        tension: 0.4,
+                                        fill: true,
+                                        pointRadius: 3,
+                                        pointHoverRadius: 6,
+                                        pointBackgroundColor: '#4285F4',
+                                        pointBorderColor: '#fff',
+                                        pointBorderWidth: 2,
+                                    }]
                                 },
-                                scales: {
-                                    x: {
-                                        ticks: {
-                                            color: '#9CA3AF',
-                                            maxTicksLimit: 10
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            labels: {
+                                                color: '#9CA3AF'
+                                            }
                                         },
-                                        grid: {
-                                            color: 'rgba(161, 161, 170, 0.1)'
+                                        tooltip: {
+                                            mode: 'index',
+                                            intersect: false,
+                                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                            titleColor: '#fff',
+                                            bodyColor: '#fff',
+                                            borderColor: '#4285F4',
+                                            borderWidth: 1
                                         }
                                     },
-                                    y: {
-                                        ticks: {
-                                            color: '#9CA3AF'
+                                    scales: {
+                                        x: {
+                                            ticks: {
+                                                color: '#9CA3AF',
+                                                maxTicksLimit: 10
+                                            },
+                                            grid: {
+                                                color: 'rgba(161, 161, 170, 0.1)'
+                                            }
                                         },
-                                        grid: {
-                                            color: 'rgba(161, 161, 170, 0.1)'
-                                        },
-                                        beginAtZero: true
+                                        y: {
+                                            ticks: {
+                                                color: '#9CA3AF'
+                                            },
+                                            grid: {
+                                                color: 'rgba(161, 161, 170, 0.1)'
+                                            },
+                                            beginAtZero: true
+                                        }
+                                    },
+                                    interaction: {
+                                        mode: 'index',
+                                        intersect: false
                                     }
-                                },
-                                interaction: {
-                                    mode: 'index',
-                                    intersect: false
                                 }
+                            });
+                        },
+                        destroy() {
+                            if (this.chart) {
+                                this.chart.destroy();
                             }
-                        });
-                    },
-                    destroy() {
-                        if (this.chart) {
-                            this.chart.destroy();
                         }
-                    }
-                }"
-                wire:click.stop>
+                }" wire:click.stop>
                 <div class="p-6 border-b border-zinc-700 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: #4285F4;">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                            style="background-color: #4285F4;">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
@@ -853,7 +981,8 @@ $closeGraphModal = function () {
                             <h2 class="text-2xl font-bold text-white">{{ $dailyData['name'] }} - 日別推移</h2>
                             @if ($dateRange)
                                 <p class="text-sm text-gray-400">
-                                    {{ $dateRange['start']->format('Y年m月d日') }} ～ {{ $dateRange['end']->format('Y年m月d日') }}
+                                    {{ $dateRange['start']->format('Y年m月d日') }} ～
+                                    {{ $dateRange['end']->format('Y年m月d日') }}
                                 </p>
                             @endif
                         </div>
@@ -861,7 +990,8 @@ $closeGraphModal = function () {
                     <button wire:click="closeGraphModal" type="button"
                         class="p-2 text-gray-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>

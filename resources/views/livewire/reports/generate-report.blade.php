@@ -13,13 +13,8 @@ new class extends Component {
     #[Validate('required')]
     public string $reportType = 'weekly';
 
-    // 一時的にサンプルデータ用にバリデーションを緩和
-    #[Validate('required')]
+    #[Validate('required|exists:ad_accounts,id')]
     public ?int $adAccountId = null;
-
-    // 本番用のバリデーション（コメントアウト）
-    // #[Validate('required|exists:ad_accounts,id')]
-    // public ?int $adAccountId = null;
 
     #[Validate('nullable|exists:analytics_properties,id')]
     public ?int $analyticsPropertyId = null;
@@ -36,25 +31,10 @@ new class extends Component {
 
     public function mount(): void
     {
-        // 一時的にサンプルデータで表示
-        $sampleAdAccounts = [(object) ['id' => 1, 'account_name' => 'サンプル広告アカウント 1'], (object) ['id' => 2, 'account_name' => 'サンプル広告アカウント 2'], (object) ['id' => 3, 'account_name' => 'サンプル広告アカウント 3']];
-
-        $this->adAccounts = collect($sampleAdAccounts);
-        $this->analyticsProperties = collect([]); // Analyticsプロパティは空で
-
-        $this->startDate = now()->subWeek()->startOfWeek()->format('Y-m-d');
-        $this->endDate = now()->subWeek()->endOfWeek()->format('Y-m-d');
-
-        if ($this->adAccounts->isNotEmpty()) {
-            $this->adAccountId = $this->adAccounts->first()->id;
-        }
-
-        // 本番用のコード（コメントアウト）
-        /*
         $user = Auth::user();
 
-        $this->adAccounts = AdAccount::where('user_id', $user->id)->where('is_active', true)->get();
-        $this->analyticsProperties = AnalyticsProperty::where('user_id', $user->id)->where('is_active', true)->get();
+        $this->adAccounts = AdAccount::where('user_id', $user->id)->where('is_active', true)->where('account_name', 'not like', '%サンプル%')->where('customer_id', 'not like', 'sample-%')->where('account_name', '!=', 'サンプル広告アカウント')->get();
+        $this->analyticsProperties = AnalyticsProperty::where('user_id', $user->id)->where('is_active', true)->where('property_name', 'not like', '%サンプル%')->get();
 
         $this->startDate = now()->subWeek()->startOfWeek()->format('Y-m-d');
         $this->endDate = now()->subWeek()->endOfWeek()->format('Y-m-d');
@@ -62,7 +42,6 @@ new class extends Component {
         if ($this->adAccounts->isNotEmpty()) {
             $this->adAccountId = $this->adAccounts->first()->id;
         }
-        */
     }
 
     public function updatedReportType($value): void
@@ -100,46 +79,6 @@ new class extends Component {
         $this->isGenerating = true;
 
         try {
-            // 一時的にサンプルデータで生成
-            // サンプルGoogleAccountを取得または作成
-            $googleAccount = GoogleAccount::firstOrCreate(
-                [
-                    'user_id' => Auth::id(),
-                    'google_id' => 'sample-' . Auth::id(),
-                ],
-                [
-                    'email' => 'sample@example.com',
-                ],
-            );
-
-            // サンプルAdAccountを取得または作成
-            $adAccount = AdAccount::firstOrCreate(
-                [
-                    'user_id' => Auth::id(),
-                    'customer_id' => 'sample-' . Auth::id(),
-                ],
-                [
-                    'google_account_id' => $googleAccount->id,
-                    'account_name' => 'サンプル広告アカウント',
-                    'currency' => 'JPY',
-                    'timezone' => 'Asia/Tokyo',
-                    'is_active' => true,
-                ],
-            );
-
-            // レポートレコードを作成
-            $report = AnalysisReport::create([
-                'user_id' => Auth::id(),
-                'ad_account_id' => $adAccount->id,
-                'analytics_property_id' => $this->analyticsPropertyId,
-                'report_type' => $this->reportType,
-                'start_date' => $this->startDate,
-                'end_date' => $this->endDate,
-                'status' => 'pending',
-            ]);
-
-            // 本番用のコード（コメントアウト）
-            /*
             // レポートレコードを作成
             $report = AnalysisReport::create([
                 'user_id' => Auth::id(),
@@ -150,7 +89,6 @@ new class extends Component {
                 'end_date' => $this->endDate,
                 'status' => 'pending',
             ]);
-            */
 
             // ジョブをディスパッチ（ローカル/同期時は即実行して待機を回避）
             if (config('queue.default', 'sync') === 'sync' || app()->environment('local')) {
